@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>电力超跌策略看板</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap">
+<style>
+/* 布局：吸顶标签栏 + 960px 单栏阅读区，四页切换；暖白纸面 + 陶土色点缀，固定浅色 */
+:root{--tx:#29261b;--tx2:#5e5a4e;--tx3:#8f8a7c;--line:#e8e4d8;--line2:#ddd8ca;
+  --bg:#faf9f5;--bg2:#f3f1ea;--card:#fffefb;--ac:#c2613f;--acbg:#f8ede6;--acln:#ecd2c4;
+  --warn:#9a6a1f;--warnbg:#f8f3e6;--warnln:#e8dcbc;--warntx:#6f5420;--warnbar:#d4a54a;--hlbg:#fbf8ef;
+  --red:#b8443a;--redbg:#f8ebe8;--redln:#ecd0cb;--green:#4d7a4a;--greenbg:#ecf2e8;--orange:#b9782a;--orangebg:#f7eedf;
+  --topbg:rgba(250,249,245,.96);
+  --serif:"Noto Serif SC","Songti SC",Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.hr2{display:flex;align-items:center;gap:10px}.lang{font-size:13px;color:var(--tx2);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--card)}.lang:hover{color:var(--ac);border-color:var(--acln)}
+body{background:var(--bg);color:var(--tx);font-size:14px;line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--topbg)}
+.wrap,.top .inner{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{padding-bottom:60px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--topbg);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:16px}
+.top h1{font-family:var(--serif);font-size:18px;font-weight:600;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.top h1 small{font-size:12px;font-weight:500;color:var(--tx3)}
+.tabs{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;font-size:14px;color:var(--tx3);padding:9px 14px;transition:.15s;font-weight:500;white-space:nowrap}
+.tab:hover{color:var(--tx2)}
+.tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:650}
+.tab:focus-visible,.fstep:focus-visible,.flip:focus-visible,.pill:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.page{display:none;padding-top:26px}.page.on{display:block}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;letter-spacing:.01em;margin:4px 0 6px;text-wrap:balance}
+.lead{color:var(--tx2);font-size:14px;margin-bottom:20px;max-width:68ch}
+h3{font-size:15px;font-weight:650;margin:28px 0 10px;padding-left:10px;border-left:3px solid var(--ac);text-wrap:balance}
+h3.g{border-color:var(--green)}h3.r{border-color:var(--red)}h3.o{border-color:var(--orange)}
+h3 .sub{font-weight:400;font-size:12.5px;color:var(--tx3)}
+p{color:var(--tx2);margin:6px 0}
+b{color:var(--tx)}
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin:12px 0;color:var(--tx2)}
+.box.hl{background:var(--hlbg);border-color:var(--warnln)}
+.box ol{padding-left:1.3em;display:grid;gap:4px}
+.tw{overflow-x:auto;margin:11px 0;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.3px;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--bg2);color:var(--tx3);font-weight:600;white-space:nowrap}
+td.n{font-family:var(--mono);font-size:12.8px;white-space:nowrap}
+.up{color:var(--green)}.dn{color:var(--red)}
+.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;border:0;font-family:inherit}
+.pill[data-why]{cursor:pointer;border-bottom:1px dotted currentColor;border-radius:20px 20px 6px 6px}
+.pB{background:var(--greenbg);color:var(--green)}.pA{background:var(--redbg);color:var(--red)}.pC{background:var(--orangebg);color:var(--orange)}
+tr.why td{background:var(--bg2);color:var(--tx2);font-size:12.5px;line-height:1.8}
+.warn{background:var(--warnbg);border:1px solid var(--warnln);border-left:3px solid var(--warnbar);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13px;color:var(--warntx)}
+.warn b{color:inherit}
+.eg{background:var(--card);border:1px solid var(--acln);border-radius:10px;padding:15px 18px;margin:14px 0}
+.eg.bad{background:var(--redbg);border-color:var(--redln)}
+.eg .t{font-weight:650;color:var(--green);font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.eg.bad .t{color:var(--red)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex-shrink:0}.eg.bad .dot{background:var(--red)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair>*{min-width:0;margin:0}
+.kpis{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 16px;display:flex;flex-direction:column}
+.kpi .n{font-size:19px;font-weight:700;color:var(--green);font-family:var(--mono);line-height:1.4}
+.kpi .l{font-size:11px;color:var(--tx3)}
+.tl{margin:14px 0}
+.tli{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.tli .d{flex-shrink:0;width:74px;font-weight:650;color:var(--ac);font-size:12.5px;font-family:var(--mono)}
+.tli .c{flex:1;min-width:0}.tli .c b{font-size:13.5px}.tli .c p{margin:2px 0;font-size:12.8px}
+.funnel{margin:16px 0 4px;display:flex;flex-direction:column;gap:7px}
+.fstep{margin:0 auto;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;font-family:inherit;color:inherit;text-align:left;font-size:inherit}
+.fstep:hover{border-color:var(--acln);background:var(--acbg)}
+.fstep .tag{font-size:11px;font-weight:650;color:var(--ac);background:var(--card);border:1px solid var(--acln);border-radius:4px;padding:2px 8px;white-space:nowrap}
+.fstep .ft{font-weight:650;font-size:14px;white-space:nowrap}
+.fstep .fd{color:var(--tx3);font-size:12.5px;margin-left:auto;text-align:right}
+.fstep .chev{color:var(--tx3);font-size:11px;margin-left:4px;transition:.2s}
+.fstep.open .chev{transform:rotate(90deg)}
+.fw1{width:100%}.fw2{width:88%}.fw3{width:76%}.fw4{width:64%}
+.fdetail{background:var(--card);border:1px solid var(--acln);border-radius:9px;padding:14px 18px;margin:0 auto;font-size:13.3px;color:var(--tx2)}
+.fhint{text-align:center;color:var(--tx3);font-size:12px;margin:10px 0 4px}
+.who{display:inline-block;font-size:10.5px;font-weight:650;padding:1px 7px;border-radius:4px;background:var(--acbg);color:var(--ac)}
+.flipgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.flip{perspective:1200px;height:190px;cursor:pointer;background:none;border:0;padding:0;font-family:inherit;color:inherit;text-align:left}
+.flipin{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.on .flipin{transform:rotateY(180deg)}
+.flipf,.flipb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:11px;padding:16px 18px;border:1px solid var(--line);overflow:auto}
+.flipf{background:var(--bg2);display:flex;flex-direction:column}
+.flipb{background:var(--card);transform:rotateY(180deg);border-color:var(--acln)}
+.flipf .st{font-family:var(--serif);font-size:19px;font-weight:600}.flipf .sp{font-size:12px;color:var(--tx3);font-family:var(--mono);margin:2px 0 10px}
+.flipf .stat{font-size:14px;font-weight:650;color:var(--green)}.flipf .stat.wait{color:var(--orange)}
+.flipf .hint{font-size:11px;color:var(--tx3);margin-top:auto}
+.flipb .r{font-size:12.3px;padding:4px 0;border-bottom:1px dashed var(--line);color:var(--tx2)}
+.bars{display:grid;gap:10px;margin:14px 0;padding:16px 18px;border:1px solid var(--line);border-radius:10px}
+.bars .row{display:grid;grid-template-columns:7.5em 1fr;gap:12px;align-items:center}
+.bars .nm{font-size:12.5px;color:var(--tx2)}
+.bars .tr{position:relative;height:34px}
+.bars .ax{position:absolute;top:-2px;bottom:-2px;left:25%;border-left:1px solid var(--line2)}
+.bars .b{position:absolute;height:13px;border-radius:2px;display:flex;align-items:center}
+.bars .b span{position:absolute;font-size:11px;font-family:var(--mono);color:var(--tx2);white-space:nowrap}
+.bars .mean{top:2px;background:var(--acln)}.bars .med{top:19px;background:var(--ac)}.bars .med.neg{background:var(--red)}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--tx3)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (max-width:720px){.flipgrid,.pair{grid-template-columns:1fr}.fw1,.fw2,.fw3,.fw4{width:100%}.fstep{flex-wrap:wrap}.fstep .fd{margin-left:0;text-align:left;flex-basis:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ===== 回测实验室 ===== */
+:root{--s1:#2766ad;--s2:#d07a35;--s3:#7b5fb0}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.modes{display:flex;gap:3px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.mode{border:0;background:none;font:inherit;font-size:13px;color:var(--tx2);padding:5px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.mode.on{background:var(--card);color:var(--tx);box-shadow:0 1px 2px rgba(41,38,27,.1);font-weight:600}
+.mode:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.tab .no{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--bg2);color:var(--tx3);font-size:11px;margin-right:6px;font-family:var(--mono)}
+.tab.on .no{background:var(--ac);color:#fff}
+.badge{font-size:10.5px;font-weight:650;padding:1px 6px;border-radius:4px;background:var(--warnbg);color:var(--warn);border:1px solid var(--warnln);margin-left:6px}
+.lpage{display:none;padding-top:22px}.lpage.on{display:block}
+.dhead{color:var(--tx2);font-size:13.5px}
+.dhead b{font-family:var(--mono);font-weight:600;color:var(--tx)}
+.mockb{display:inline-block;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.06em;padding:1px 8px;border-radius:4px;background:var(--redbg);color:var(--red);border:1px solid var(--redln)}
+code{font-family:var(--mono);font-size:.92em;background:var(--bg2);padding:0 4px;border-radius:4px}
+.drop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1.5px dashed var(--line2);border-radius:10px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--tx2);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--ac);background:var(--acbg)}
+.loadmsg{font-size:13px;color:var(--tx2);margin:-4px 0 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:center}
+.stat .v{font-size:26px;font-weight:600;font-family:var(--mono);line-height:1.3}
+.stat .k{font-size:12px;color:var(--tx3)}
+.v.g{color:var(--green)}.v.o{color:var(--orange)}.v.r{color:var(--red)}
+.vt td{vertical-align:middle}
+.vt tr.w td{background:var(--warnbg)}.vt tr.e td{background:var(--redbg)}
+.lnk{background:none;border:0;font:inherit;font-family:var(--mono);font-size:12.8px;color:var(--ac);cursor:pointer;padding:0;text-align:left}
+.lnk:hover{text-decoration:underline}
+.lnk.sm{font-family:inherit;font-size:12px}
+tr.pv>td{background:var(--bg2);padding:12px}
+.pvt{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.pvt table{font-size:12px;margin:0}.pvt th{position:sticky;top:0}
+.pvt td{font-family:var(--mono);white-space:nowrap}
+.pvt tr.gap td{text-align:center;color:var(--tx3);font-family:inherit}
+.center{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px 0 6px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 22px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:var(--card);color:var(--tx);border:1px solid var(--line2)}
+.btn.sm{padding:5px 12px;font-size:13px}
+.btn:focus-visible,.si:focus-visible,.lnk:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.cfg{display:grid;grid-template-columns:232px minmax(0,1fr);gap:16px;align-items:start}
+.siglist{border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--card);position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);max-height:calc(100vh - 130px);overflow:auto}
+.sg h5{font-size:11.5px;color:var(--tx3);letter-spacing:.08em;margin:10px 8px 3px;font-weight:600}
+.si{display:flex;gap:8px;align-items:center;width:100%;border:0;background:none;font:inherit;font-size:13px;color:var(--tx);padding:6px 8px;border-radius:7px;cursor:pointer;text-align:left}
+.si:hover{background:var(--bg2)}
+.si .no{font-family:var(--mono);font-size:11px;color:var(--tx3);width:18px;text-align:right;flex-shrink:0}
+.si.on{background:var(--acbg);color:var(--ac);font-weight:600}.si.on .no{color:var(--ac)}
+.si:disabled{color:var(--tx3);cursor:not-allowed;background:none}
+.si .off{margin-left:auto;font-size:10.5px;padding:0 6px;border-radius:4px;background:var(--bg2);color:var(--tx3);white-space:nowrap}
+.si .off.x{background:var(--redbg);color:var(--red)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 12px}
+.panel h4{font-size:14.5px;font-weight:650;margin-bottom:12px}
+.panel h4 small{font-weight:400;color:var(--tx3);font-size:12px}
+.h4b{margin-top:22px}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px 14px}
+.fld{min-width:0}
+.fld label{display:block;font-size:12.5px;color:var(--tx2);margin-bottom:4px;font-weight:500}
+.fld label small{color:var(--tx3);font-weight:400}
+.fld input,.fld select{width:100%;font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line2);border-radius:7px;background:var(--bg);color:var(--tx);font-variant-numeric:tabular-nums}
+.fld input:focus,.fld select:focus{outline:2px solid var(--acln);border-color:var(--ac)}
+.fld select:disabled{color:var(--tx3)}
+.sigdesc{border-left:3px solid var(--line2);padding:4px 12px;margin:0 0 14px;color:var(--tx2);font-size:13px}
+.sigmeta{font-size:12px;color:var(--tx3);margin:-8px 0 12px}
+.ck label{font-size:13.5px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.ck input{accent-color:var(--ac);width:15px;height:15px}
+.hintp{font-size:12px;color:var(--tx3);margin:6px 0 0}
+.rhead h3{margin-top:4px}
+.rhead .sub{font-size:13px;color:var(--tx3);font-family:var(--mono)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{font-size:12.5px;padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--tx2)}
+.chip.g{background:var(--greenbg);color:var(--green)}.chip.r{background:var(--redbg);color:var(--red)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px}
+.met{background:var(--bg2);border-radius:9px;padding:9px 12px;min-width:0}
+.met .v{font-size:19px;font-weight:600;font-family:var(--mono);line-height:1.4}
+.met .k{font-size:11.5px;color:var(--tx3)}
+.met .v.up{color:var(--green)}.met .v.dn{color:var(--red)}
+.rule{font-size:12.8px;color:var(--tx2);background:var(--acbg);border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:9px 14px;margin:0 0 14px}
+.legend{flex-wrap:wrap;gap:6px 16px;margin:2px 0 6px}
+.legend .tick{width:12px;height:3px;background:var(--tx);border-radius:1px;vertical-align:3px}
+.legend .dash{width:16px;height:0;border-top:2px dashed var(--s3);border-radius:0;vertical-align:3px;background:none}
+.tri{font-size:10px;margin-right:4px}.tri.up{color:var(--green)}.tri.dn{color:var(--red)}
+.chart{position:relative;margin:4px 0;touch-action:pan-y}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--mono);font-size:10.5px;fill:var(--tx3)}
+.chart .lab{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-size:11px}
+.tip{position:absolute;top:0;pointer-events:none;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:12px;line-height:1.6;box-shadow:0 6px 18px rgba(41,38,27,.12);white-space:nowrap;font-variant-numeric:tabular-nums;z-index:3}
+.tip b{font-family:var(--mono)}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.cap{font-size:11.5px;color:var(--tx3);text-align:right}
+.trades{margin-top:14px}
+.trades summary{cursor:pointer;font-size:13px;color:var(--tx2)}
+.trades table td{font-family:var(--mono);font-size:12px}
+.empty{padding:28px;text-align:center;color:var(--tx3);font-size:13px}
+@media (max-width:820px){.cfg{grid-template-columns:1fr}.siglist{position:static;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:0 6px}.sg{min-width:0}.metrics{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="inner">
+  <div class="hrow">
+    <h1>电力超跌策略看板<small>火电 / 水电 · 数据截至 2026-08-24 · 全部为样本内结论</small></h1>
+    <div class="hr2">
+      <div class="modes" role="group" aria-label="切换模块"><button class="mode on" data-m="a">① 研究框架</button><button class="mode" data-m="b">② 回测实验室</button></div>
+      <a class="lang" href="en.html" hreflang="en" lang="en">EN</a>
+    </div>
+  </div>
+  <div class="tabs" role="tablist" data-m="a">
+    <button class="tab on" role="tab" onclick="go(0)">政策与背景</button>
+    <button class="tab" role="tab" onclick="go(1)">火电漏斗</button>
+    <button class="tab" role="tab" onclick="go(2)">水电漏斗</button>
+    <button class="tab" role="tab" onclick="go(3)">因子清单</button>
+  </div>
+  <div class="tabs" role="tablist" data-m="b" hidden>
+    <button class="tab on" role="tab" onclick="lgo(0)"><span class="no">1</span>数据核验<span class="badge">HITL</span></button>
+    <button class="tab" role="tab" onclick="lgo(1)"><span class="no">2</span>信号配置</button>
+    <button class="tab" role="tab" onclick="lgo(2)"><span class="no">3</span>回测结果</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+<div id="modeA">
+
+<!-- ========== 页1：政策 ========== -->
+<div class="page on" id="p0">
+  <h2>政策与背景：火电为什么"红利化"</h2>
+  <div class="lead">整个策略的宏观前提：政策把火电从"周期股"改造成"红利/公用事业股"。这决定了后面归因怎么判 A/B。</div>
+
+  <h3>核心判断：火电红利化（三重挤压）</h3>
+  <div class="box">
+    <b>成本被框稳</b>：长协煤价 570–770 绿色区间（303号文）→ 煤价冲击变少<br>
+    <b>电价被框住</b>：市场化改革 ±20% 浮动（1439号文）→ 电价能涨能跌，弹性受限<br>
+    <b>份额被挤占</b>：风光优先上网、装机大超预期 → 火电发电空间被永久挤<br>
+    <b>→ 结论</b>：火电从"赚煤电价差的周期股"变成"吃稳定现金流+分红的红利股"
+  </div>
+
+  <h3>政策断点时间轴（因子校验基准）</h3>
+  <div class="tl" id="timeline"></div>
+
+  <h3>三个五年规划：前两轮均超额达成 <span class="sub">（点卡片看目标 vs 实现）</span></h3>
+  <div class="flipgrid" id="plans"></div>
+  <div class="warn">前两轮（十三五/十四五）规划目标均超额达成 → 十五五"煤电转支撑调节性电源"的可信度高，可当基准假设。</div>
+
+  <h3 class="o">政策外推 → 火电因子取舍（方向假设）</h3>
+  <div class="tw"><table id="qushe"></table></div>
+  <div class="warn">这是从政策外推的方向假设：煤价类因子降权（被框稳）、电价/风光挤占改做"A-永久判定器"、红利/现金流类因子优先。</div>
+</div>
+
+<!-- ========== 页2：火电漏斗 ========== -->
+<div class="page" id="p1">
+  <h2>火电漏斗：跌得多 ≠ 跌错了</h2>
+  <div class="lead">用真实事件一步步推导：同样是超跌，怎么区分"错杀（该反弹）"和"价值陷阱（活该跌）"。</div>
+
+  <h3>先看两个真实事件的对比（漏斗的起点）</h3>
+  <div class="pair">
+    <div class="eg">
+      <div class="t"><span class="dot"></span>例1：2022-10 华能超跌 −16.4%</div>
+      <p><b>表面</b>：政策环境看着不好，股价大跌，像是"该跌"。</p>
+      <p><b>但查真实数据</b>：电价 <b>+18%</b>（缺电涨价）、煤价平、水电偏枯少挤占 → <b>基本面根本没坏！</b></p>
+      <p><b>判定</b>：<span class="pill pB">B类·错杀</span> → 跌错了，该反弹 → 事后 t+60 <b class="up">+7.3%</b> ✅ 修复了</p>
+    </div>
+    <div class="eg bad">
+      <div class="t"><span class="dot"></span>例2：2024-07 华能超跌 −17.8%</div>
+      <p><b>表面</b>：股价便宜了，看着像抄底机会。</p>
+      <p><b>但查真实数据</b>：电价 <b>−2.85%</b>（下行）+ 风光挤占重 + 水电丰水 +10.5% 再抢 → <b>基本面真的变差了！</b></p>
+      <p><b>判定</b>：<span class="pill pA">A类·永久</span> → 价值真下移，别碰 → 事后 t+60 <b class="dn">−10.7%</b> ❌ 继续跌（陷阱）</p>
+    </div>
+  </div>
+  <div class="box"><b>这两个例子推出漏斗的核心</b>：光看"跌了多少"没用，必须查基本面（煤价/电价/风光/水电）判断"跌得该不该"，这就是 A/B 归因。</div>
+
+  <h3>由例子归纳出的 4 层漏斗 <span class="sub">（点击展开细节）</span></h3>
+  <div class="funnel">
+    <button class="fstep fw1" onclick="ft(this)"><span class="tag">第1层</span><span class="ft">择时</span><span class="fd">板块超跌了吗 → 7次</span><span class="chev">▶</span></button>
+    <div class="fdetail fw1" hidden><b>怎么筛</b>：火电指数相对沪深300的 60 日超额收益 ≤ 历史 5% 分位（阈值 −16%）→ 触发。<br><b>为什么</b>：用"相对沪深300超额"排除大盘普跌；用"历史分位"自适应，不主观拍阈值。<b>只用价格、不掺因子 → 防循环论证。</b><br><b>结果</b>：10年筛出 7 次。</div>
+    <button class="fstep fw2" onclick="ft(this)"><span class="tag">第2层</span><span class="ft">选便宜</span><span class="fd">哪些个股便宜</span><span class="chev">▶</span></button>
+    <div class="fdetail fw2" hidden><b>用什么</b>：高股息率、高FCF收益率、低PB，都是"跌得有价值"的标。<br><b>频率处理</b>：财务值（年频）÷ 股价（日频）→ 比值是日频信号。<br><b>防未来函数</b>：财报用公告日滞后（当年年报次年4月才披露）。</div>
+    <button class="fstep fw3" onclick="ft(this)"><span class="tag">第3层</span><span class="ft">排雷</span><span class="fd">错杀还是陷阱（A/B归因）</span><span class="chev">▶</span></button>
+    <div class="fdetail fw3" hidden><b>用上面两个例子的 A/B 归因</b>：<br>· <span class="pill pA">A类永久</span> 电价下行/风光挤占（如2024）→ 价值真下移 → <b>剔除（陷阱）</b><br>· <span class="pill pC">A类周期</span> 煤价冲击（如2020）→ 会回摆 → 看周期位置<br>· <span class="pill pB">B类错杀</span> 基本面没坏（如2022电价+18%）→ <b>保留（真机会）</b><br><b>价值</b>：第2层"便宜就买"会踩陷阱，永久变差的股越跌越"便宜"，这一层专门排雷。</div>
+    <button class="fstep fw4" onclick="ft(this)"><span class="tag">第4层</span><span class="ft">选优</span><span class="fd">选现金流好+抗跌前5</span><span class="chev">▶</span></button>
+    <div class="fdetail fw4" hidden><b>打分</b>：综合分 = zscore(FCF收益率) + zscore(前期抗跌)，选前5等权持有60天。<br><b>为什么这2个</b>：回测排榜里最 work（高FCF均值 +6.2%、前期抗跌 RankIC 最高）。<br><b>⚠ 但中位数一看就弱</b>（见下面"均值 vs 中位数"）。</div>
+  </div>
+  <div class="fhint">漏斗层层收窄至最终名单</div>
+
+  <h3>7 个超跌事件的归因结果 <span class="sub">（点「归因」标签看贡献的 A 类因子明细）</span></h3>
+  <div class="tw"><table>
+    <tr><th>事件</th><th>超额</th><th>关键数据</th><th>归因</th><th>t+60</th></tr>
+    <tr><td class="n">2017-08→11</td><td class="n dn">−17.4%</td><td>电价市场化前、煤价降</td><td><button class="pill pB" data-why="A1煤价−12.6%（降·利好） / A9-10电价：标杆稳（市场化前） / A11利用小时+1.1% / A12需求+6.5%强 / A13风光挤占：早期轻 / A14水电：中性 → 查不到基本面利空，判B类错杀">B错杀</button></td><td class="n dn">−15.8%</td></tr>
+    <tr><td class="n">2018-12→19-04</td><td class="n dn">−17.5%</td><td>电价+2.72%、煤价平</td><td><button class="pill pB" data-why="A1煤价−1.0%（平） / A9-10电价+2.72%（华能，涨） / A11利用小时+3.6%（升） / A12需求+5.9%强 / A13风光较轻 / A14水电中性 → 基本面反而向好却跌=错杀">B错杀</button></td><td class="n dn">−4.3%</td></tr>
+    <tr><td class="n">2020-04→07</td><td class="n dn">−16.9%</td><td>疫情错杀</td><td><button class="pill pB" data-why="A1煤价−4.3%（平） / A9-10电价：标杆稳 / A11利用小时−1.8%（疫情） / A12需求−0.7%（疫情） / A13风光中 / A14水电中性 → 疫情短期冲击非结构性=错杀">B错杀</button></td><td class="n up">+0.4%</td></tr>
+    <tr><td class="n">2020-10→21-01</td><td class="n dn">−17.3%</td><td>煤价+31%冲击</td><td><button class="pill pC" data-why="A1煤价+31.3%（❌主因·成本冲击） / A9-10电价+4.41%（涨） / A11利用小时+5.5%（缺电多发） / A12需求中性 / A13风光中 / A14水电中性 → 电价电量都好、唯煤价暴涨=A周期（会回摆）">A周期</button></td><td class="n up">+23.9%</td></tr>
+    <tr><td class="n">2022-10→23-01</td><td class="n dn">−16.4%</td><td>电价+18%涨、煤价平</td><td><button class="pill pB" data-why="A1煤价+4.4%（平） / A9-10电价≈+18%（缺电大涨） / A11利用小时−1.6%（平） / A12需求中性 / A13风光重 / A14水电偏枯（少挤占·利好） → 电价大涨、基本面没坏却跌=错杀（用真实电价改判）">B错杀</button></td><td class="n up">+7.3%</td></tr>
+    <tr><td class="n">2024-07→09</td><td class="n dn">−17.8%</td><td>电价−2.85%+风光+水电挤</td><td><button class="pill pA" data-why="A1煤价−2.9%（平） / A9-10电价−2.85%（❌下行） / A11利用小时−1.7%（❌降） / A12需求+8.0%（强） / A13风光挤占❌重 / A14水电+10.5%丰水❌强挤占 → 三重结构性利空=A永久（价值陷阱）">A永久</button></td><td class="n dn">−10.7%</td></tr>
+    <tr><td class="n">2026-03→06</td><td class="n dn">−16.8%</td><td>电价−3.5%下行</td><td><button class="pill pA" data-why="A1煤价+10.0%（略升） / A9-10电价−3.5%（❌下行） / A11利用小时降（2025全国−312h） / A12需求+5.3%（强） / A13风光挤占❌重 / A14水电：来水回落挤占减弱 → 电价持续下行+风光挤占=A永久">A永久</button></td><td class="n">n/a</td></tr>
+  </table></div>
+
+  <h3 class="r">但最硬的发现：纯火电超跌不修复</h3>
+  <div class="box">
+    7次超跌后 t+60 相对沪深300平均超额 = <b>+0.14%</b>（约等于0）<br>
+    对比混合公用事业指数（含水电/核电/红利）：<b>+6.8%</b><br>
+    <b>→ 市场以为的"电力抄底能赚"，赚的其实是里面的水电/核电/红利，纯火电本身不修复。</b>
+  </div>
+
+  <h3>选股回测：均值好看，中位数塌了</h3>
+  <div class="tw"><table>
+    <tr><th>因子</th><th>均值超额</th><th>中位数</th><th>真相</th></tr>
+    <tr><td>高FCF</td><td class="n">+6.2%</td><td class="n">+1.8%</td><td>靠少数大赢</td></tr>
+    <tr><td>FCF+抗跌组合</td><td class="n">+7.6%</td><td class="n">+0.9%</td><td>光环褪去</td></tr>
+    <tr><td>前期抗跌</td><td class="n">+5.2%</td><td class="n dn">−2.1%</td><td>中位数为负！靠妖股</td></tr>
+    <tr><td>低波动</td><td class="n">+0.5%</td><td class="n">+0.7%</td><td>唯一表里如一</td></tr>
+  </table></div>
+  <div class="bars" id="mvm" aria-label="均值与中位数对比"></div>
+  <div class="warn">教训：小样本下均值被极端值（如2020华银电力 +228%）严重高估。中位数才是能稳定复现的部分，火电选股 alpha 其实很弱。</div>
+
+  <h3>火电结论</h3>
+  <div class="box hl"><ol>
+    <li>纯火电超跌<b>不修复</b>（+0.14%），单纯抄底火电难赚</li>
+    <li>火电的钱在<b>选股</b>不在择时，但因子偏弱（中位数才 +1.8%）</li>
+    <li>A/B 归因的价值在<b>排雷</b>：避开像2024那样的价值陷阱</li>
+    <li>诚实边界：样本7次，方向性结论，非统计铁证</li>
+  </ol></div>
+</div>
+
+<!-- ========== 页3：水电漏斗 ========== -->
+<div class="page" id="p2">
+  <h2>水电漏斗：把"煤价"换成"来水"</h2>
+  <div class="lead">水电没有燃料成本，"燃料"就是来水。同样的 A/B 框架：丰水年跌=错杀，枯水年跌=真跌。</div>
+
+  <h3>先看两个真实事件的对比</h3>
+  <div class="pair">
+    <div class="eg">
+      <div class="t"><span class="dot"></span>例1：2024-10 水电超跌</div>
+      <p><b>查来水</b>：2024来水<b>丰</b>（全国水电发电 +10.5%）→ 基本面好却跌 = <b>错杀</b></p>
+      <p><b>判定</b>：<span class="pill pB">B类·错杀</span> → t+60 <b class="up">+5.0%</b> ✅ 修复</p>
+    </div>
+    <div class="eg bad">
+      <div class="t"><span class="dot"></span>例2：2025-07 水电超跌</div>
+      <p><b>查来水</b>：2025 Q3来水<b>偏枯 −8%</b>、单季发电降10–17% → 基本面真差 = <b>真跌</b></p>
+      <p><b>判定</b>：<span class="pill pC">A类·周期</span> → t+60 <b class="dn">−13.8%</b> ❌ 修复失败（枯水年抄底=踩坑）</p>
+    </div>
+  </div>
+  <div class="box"><b>推出水电的核心规律</b>：水电超跌能不能抄，取决于跌的时候是<b>丰水还是枯水</b>。丰水年跌=错杀（抄），枯水年跌=真跌（别碰）。这就是火电 A/B 框架的迁移，"煤价"换成"来水"。</div>
+
+  <h3>水电漏斗 <span class="sub">（点击展开细节）</span></h3>
+  <div class="funnel">
+    <button class="fstep fw1" onclick="ft(this)"><span class="tag">第1层</span><span class="ft">择时</span><span class="fd">水电板块超跌了吗 → 6次</span><span class="chev">▶</span></button>
+    <div class="fdetail fw1" hidden>11只纯水电等权合成指数，相对沪深300的60日超额 ≤ 历史5%分位（阈值 −14.4%）→ 触发。2018至今筛出6次。</div>
+    <button class="fstep fw2" onclick="ft(this)"><span class="tag">第2层</span><span class="ft">看来水</span><span class="fd">丰水还是枯水（水电的煤价）</span><span class="chev">▶</span></button>
+    <div class="fdetail fw2" hidden><b>水电没有煤价，"燃料"就是来水。</b>查当年来水/水电发电量同比：来水多=发电多=利好；枯水=利空。</div>
+    <button class="fstep fw3" onclick="ft(this)"><span class="tag">第3层</span><span class="ft">排雷</span><span class="fd">错杀还是陷阱（看丰枯）</span><span class="chev">▶</span></button>
+    <div class="fdetail fw3" hidden>· <span class="pill pB">B类错杀</span> 丰水年却跌（如2024丰水 +10.5%）→ 基本面好却跌 → <b>会修复（抄）</b><br>· <span class="pill pC">A类周期</span> 枯水年跌（如2025 Q3枯水 −8%）→ 基本面真差 → <b>不修复（别碰）</b><br>2025那次亏 −13.8% 就是踩了"枯水年抄底"的坑。</div>
+    <button class="fstep fw4" onclick="ft(this)"><span class="tag">第4层</span><span class="ft">选标的</span><span class="fd">水电同质 → 挑龙头而非选股</span><span class="chev">▶</span></button>
+    <div class="fdetail fw4" hidden><b>水电同质化</b>（都是稳定现金流+高分红）→ 选股（挑哪只）无效。应做择时、且挑龙头：实测6只水电只有<b>长江电力</b>的超跌信号真正显著（+5.3%，p=0.03）。</div>
+  </div>
+
+  <h3>6 次水电超跌事件 · 来水归因 <span class="sub">（点「归因」标签看来水明细）</span></h3>
+  <div class="tw"><table>
+    <tr><th>事件</th><th>t+60修复</th><th>当时来水</th><th>归因</th></tr>
+    <tr><td class="n">2020-04→07</td><td class="n up">+0.7%</td><td>上半年枯，6月转丰</td><td><button class="pill pB" data-why="来水：上半年偏枯（长江电力Q2发电−8.9%），但6月主汛期提前到来、7–9月连创降水纪录 → 枯水吓跌但汛期立刻回补=错杀">B错杀</button></td></tr>
+    <tr><td class="n">2021-01</td><td class="n up">+20.0%</td><td>偏枯，估值超跌反弹</td><td><button class="pill pC" data-why="来水：2021全年水电发电−2.2%、利用小时−199h（偏枯），但估值超跌后大幅反弹+20% → 弱枯水+估值修复">弱枯水</button></td></tr>
+    <tr><td class="n">2023-01</td><td class="n up">+1.9%</td><td>上半年 −22.9% 严重枯水</td><td><button class="pill pC" data-why="来水：2023年初水库蓄水不足+降水持续偏少，上半年规上水电发电−22.9%、全年−5.6% → 枯水实锤=A周期">A周期</button></td></tr>
+    <tr><td class="n">2024-10</td><td class="n up">+5.0%</td><td>来水丰（+10.5%）</td><td><button class="pill pB" data-why="来水：2024全国水电发电量同比+10.5%（丰水年），利用小时+216h → 基本面明显好转却超跌=错杀">B错杀</button></td></tr>
+    <tr><td class="n">2025-07</td><td class="n dn">−13.8%</td><td>Q3枯水 −8%</td><td><button class="pill pC" data-why="来水：2025前三季乌东德偏枯6.04%、三峡偏枯；7–9月长江流域来水较均值−8%，单季发电降10–17%、归母净利−9.16% → 枯水真跌，抄底失败">A周期</button></td></tr>
+    <tr><td class="n">2026-06</td><td>未满60天</td><td>待观察</td><td>—</td></tr>
+  </table></div>
+  <div class="warn">水电超跌后平均修复 +2.75%（好于纯火电 +0.14%），但不稳：被2021那次 +20% 拉高，且2025枯水年大亏 −13.8%。</div>
+
+  <h3 class="g">最硬的发现：长江电力超跌信号（唯一统计显著）</h3>
+  <div class="box hl">
+    在长江电力上，"超跌就买"（相对自身历史超额 ≤ 5%分位）：
+    <div class="kpis">
+      <span class="kpi"><span class="n">+5.2%</span><span class="l">t+60 平均超额</span></span>
+      <span class="kpi"><span class="n">83%</span><span class="l">胜率</span></span>
+      <span class="kpi"><span class="n">0.03</span><span class="l">p 值（显著）</span></span>
+      <span class="kpi"><span class="n">+5.2%</span><span class="l">中位数 = 均值</span></span>
+    </div>
+    <b>这是整个研究里质量最高的结果</b>：统计显著、中位数=均值（不靠妖股）、有逻辑（龙头+水库调节能力，超跌必是错杀）。
+  </div>
+
+  <h3 class="r">但要诚实：只有长江特殊，不能泛化</h3>
+  <div class="tw"><table>
+    <tr><th>水电股</th><th>超跌超额</th><th>中位数</th><th>胜率</th><th>p值</th></tr>
+    <tr><td><b>长江电力</b></td><td class="n up">+5.3%</td><td class="n">+5.2%</td><td class="n">83%</td><td class="n"><b>0.03</b> ✅</td></tr>
+    <tr><td>桂冠电力</td><td class="n">+5.3%</td><td class="n">+2.3%</td><td class="n">71%</td><td class="n">0.18</td></tr>
+    <tr><td>川投能源</td><td class="n">+0.3%</td><td class="n">+0.1%</td><td class="n">50%</td><td class="n">0.93</td></tr>
+    <tr><td>黔源电力</td><td class="n">+0.1%</td><td class="n dn">−3.1%</td><td class="n">29%</td><td class="n">0.99</td></tr>
+    <tr><td>华能水电</td><td class="n dn">−3.9%</td><td class="n dn">−3.8%</td><td class="n">50%</td><td class="n">0.29</td></tr>
+    <tr><td>三峡水利</td><td class="n dn">−1.2%</td><td class="n dn">−3.4%</td><td class="n">45%</td><td class="n">0.67</td></tr>
+  </table></div>
+  <div class="warn">6只水电龙头，只有长江真正有效。原因：长江的水库群调节能力+龙头地位，让它的超跌几乎必是错杀；普通水电超跌可能是真枯水，不修复。<b>别说"水电能抄底"，要说"长江能抄底（因为它特殊）"。</b></div>
+
+  <h3>火电 vs 水电 全对比</h3>
+  <div class="tw"><table>
+    <tr><th>维度</th><th>火电</th><th>水电</th></tr>
+    <tr><td>超跌修复</td><td>+0.14%（不修复）</td><td>+2.75%（略修复，不稳）</td></tr>
+    <tr><td>成本主因</td><td>煤价（日频）</td><td>来水丰枯（季节）</td></tr>
+    <tr><td>选股（挑哪只）</td><td class="up">✅ 有效（分化大）</td><td class="dn">❌ 无效（同质化）</td></tr>
+    <tr><td>最优打法</td><td>选股（FCF+抗跌）</td><td>择时（挑长江这种龙头）</td></tr>
+    <tr><td>A/B归因核心</td><td>煤价 / 电价</td><td>来水丰枯</td></tr>
+  </table></div>
+
+  <h3>水电结论</h3>
+  <div class="box hl"><ol>
+    <li>水电超跌看<b>来水</b>：丰水年跌=错杀（抄），枯水年跌=真跌（别碰）</li>
+    <li>水电<b>同质化</b> → 选股无效，该做择时（挑龙头）</li>
+    <li><b>长江电力</b>是唯一统计显著的标的（+5.3%，p=0.03），但因它特殊，不可泛化到所有水电</li>
+    <li>A/B 框架跨板块通用：火电的"煤价" = 水电的"来水"</li>
+  </ol></div>
+</div>
+
+<!-- ========== 页4：因子清单 ========== -->
+<div class="page" id="p3">
+  <h2>因子清单：跑了什么、结果如何</h2>
+  <div class="lead">本人实测过的全部因子与信号：口径、结果与局限。诚实标注均值与中位数差异。</div>
+
+  <h3>一、择时信号（单标的 · 超跌买入持有60天）</h3>
+  <div class="tw"><table>
+    <tr><th>信号</th><th>标的</th><th>t+60超额</th><th>胜率</th><th>p值</th></tr>
+    <tr><td rowspan="4">超跌幅度分位<br>（相对沪深300超额 ≤ 5%）</td><td>长江电力（水电）</td><td class="n up"><b>+5.2%</b></td><td class="n">83%</td><td class="n"><b>0.03</b> ✅</td></tr>
+    <tr><td>中国神华（煤电一体）</td><td class="n up">+4.9%</td><td class="n">83%</td><td class="n">0.21</td></tr>
+    <tr><td>华能国际（火电）</td><td class="n">+1.3%</td><td class="n">33%</td><td class="n">0.77</td></tr>
+    <tr><td>中国核电（核电）</td><td class="n">+0.6%</td><td class="n">50%</td><td class="n">0.86</td></tr>
+  </table></div>
+  <div class="warn">结论：单信号择时只有<b>长江电力显著</b>（p=0.03，且中位数=均值、不靠极端值）。纯火电择时无效，印证"火电超跌不修复"。</div>
+
+  <h3>二、横截面选股因子（火电29只 · 超跌选前5 vs 等权）</h3>
+  <div class="tw"><table>
+    <tr><th>因子</th><th>均值超额</th><th>中位数</th><th>胜率</th><th>评价</th></tr>
+    <tr><td>FCF+抗跌组合</td><td class="n">+7.6%</td><td class="n">+0.9%</td><td class="n">83%</td><td>均值最高，中位数塌</td></tr>
+    <tr><td>高FCF</td><td class="n">+6.2%</td><td class="n">+1.8%</td><td class="n">83%</td><td>相对最稳</td></tr>
+    <tr><td>前期抗跌</td><td class="n">+5.2%</td><td class="n dn">−2.1%</td><td class="n">67%</td><td>中位数为负 · 靠妖股</td></tr>
+    <tr><td>低波动</td><td class="n">+0.5%</td><td class="n">+0.7%</td><td class="n">67%</td><td>唯一表里如一</td></tr>
+  </table></div>
+  <div class="warn">结论：<b>所有选股因子中位数都很弱</b>（最好的高FCF也仅 +1.8%），均值靠少数翻倍股撑起。整体看火电选股 alpha 有限，这是板块特性（超跌不修复）决定的。</div>
+
+  <h3>三、组合验证（1+1 能否 &gt; 2）</h3>
+  <div class="tw"><table>
+    <tr><th>组合</th><th>均值超额</th><th>结论</th></tr>
+    <tr><td>高FCF单独</td><td class="n">+6.2%</td><td>—</td></tr>
+    <tr><td>前期抗跌单独</td><td class="n">+5.2%</td><td>—</td></tr>
+    <tr><td><b>FCF+抗跌</b></td><td class="n up"><b>+7.6%</b></td><td>✅ 两个好因子组合，1+1&gt;2</td></tr>
+    <tr><td>+低波动（3因子）</td><td class="n dn">−0.1%</td><td>❌ 加弱因子拖垮组合</td></tr>
+    <tr><td>4因子全</td><td class="n dn">−0.9%</td><td>❌ 因子不是越多越好</td></tr>
+  </table></div>
+  <div class="box">关键认知：组合只放"各自都强"的因子（FCF+抗跌），加一个弱因子（低波动）就毁掉整个组合。</div>
+
+  <h3>四、归因（A/B 框架，用于诊断，非收益因子）</h3>
+  <div class="tw"><table>
+    <tr><th>板块</th><th>归因维度</th><th>事件数</th><th>用途</th></tr>
+    <tr><td>火电</td><td>煤价/电价/利用小时/需求/风光/水电挤占</td><td class="n">7次</td><td>判B错杀 / A周期 / A永久</td></tr>
+    <tr><td>水电</td><td>来水丰枯（水电的"煤价"）</td><td class="n">6次</td><td>丰水跌=错杀 / 枯水跌=真跌</td></tr>
+  </table></div>
+  <div class="box hl"><b>最硬的结果</b>：长江电力超跌信号 +5.2%、p=0.03、中位数=均值。其余因子均偏弱。研究的核心价值在<b>诊断（A/B排雷、证伪抄底）</b>，不在找到强 alpha。</div>
+</div>
+
+</div><!--modeA-->
+<div id="modeB" hidden>
+
+<!-- ========== 实验室 1：数据核验 ========== -->
+<div class="lpage on" id="l0">
+  <div class="dhead">
+    <div>当日：<b id="today">—</b> · 数据截至：<b id="lastDate">—</b>（最新前一个收盘交易日）<span class="mockb" id="mockBadge" hidden>MOCK · 示例数据</span></div>
+    <p>请在跑回测前逐一确认每份 CSV 的行数、日期范围、量级和是否有异常跳变。确认无误后点底部按钮进入信号配置。</p>
+  </div>
+  <div class="warn" id="mockNote" hidden>当前是<b>合成的示例数据</b>，用来演示流程和图表，不是真实行情，图上的数字不代表任何研究结论。把 <code>backend/app/data_cache/</code> 里的 CSV 拖进下面的框（文件名保持不变），就会替换成真实数据，全部在浏览器本地计算，不上传。</div>
+  <label class="drop" id="drop" for="csvIn">
+    <span class="dropt"><b>载入真实数据</b>：选择或拖入 data_cache 下的 CSV，可多选</span>
+    <span class="btn ghost sm">选择文件</span>
+    <input type="file" id="csvIn" accept=".csv,text/csv" multiple hidden>
+  </label>
+  <div class="loadmsg" id="loadMsg" hidden></div>
+  <div class="stats" id="vStats"></div>
+  <div class="tw"><table class="vt" id="vTable"></table></div>
+  <div class="center"><button class="btn" id="verifyBtn">我已核验，进入信号配置 →</button></div>
+</div>
+
+<!-- ========== 实验室 2：信号配置 ========== -->
+<div class="lpage" id="l1">
+  <div class="cfg">
+    <nav class="siglist" id="sigList" aria-label="信号库"></nav>
+    <div class="cfgr">
+      <div class="panel">
+        <h4>全局配置</h4>
+        <div class="form">
+          <div class="fld"><label for="cStock">标的</label><select id="cStock"></select></div>
+          <div class="fld"><label for="cMode">检验方式</label><select id="cMode"><option value="both">分档检验 + 净值回测</option><option value="ic">分档前瞻收益 IC 检验</option><option value="nav">双阈值净值回测</option></select></div>
+          <div class="fld"><label for="cN">IC 前瞻窗口</label><select id="cN"></select></div>
+          <div class="fld"><label for="cIcv">IC 变量口径 <small>P0 统一口径</small></label><select id="cIcv"><option value="pct">分位（去趋势，更保守）</option><option value="raw">原始值（会吃到利率趋势）</option></select></div>
+          <div class="fld"><label for="cStep">每次加/减仓比例 <small>信号触发时</small></label><input id="cStep" type="number" step="0.05" min="0.05" max="1" value="0.3"></div>
+          <div class="fld"><label for="cFloor">底仓 <small>空仓期保留仓位</small></label><input id="cFloor" type="number" step="0.1" min="0" max="1" value="0"></div>
+          <div class="fld"><label for="cCap">仓位上限</label><input id="cCap" type="number" step="0.1" min="0.1" max="1" value="1"></div>
+          <div class="fld"><label for="cStart">开始日期</label><input id="cStart" type="date" value="2018-01-02"></div>
+          <div class="fld"><label for="cEnd">结束日期</label><input id="cEnd" type="date" value="2026-08-24"></div>
+          <div class="fld"><label for="cCost">双边成本率 <small>买+卖合计</small></label><input id="cCost" type="number" step="0.0005" min="0" value="0.0015"></div>
+          <div class="fld"><label for="cRf">无风险利率（年化）</label><input id="cRf" type="number" step="0.005" min="0" value="0.02"></div>
+          <div class="fld"><label for="cExec">执行价</label><select id="cExec" disabled><option>次日开盘（防未来）</option></select></div>
+        </div>
+      </div>
+      <div class="panel" id="sigPanel"></div>
+      <div class="panel ck">
+        <label><input type="checkbox" id="c924"> <b>924 分段对比</b>（全周期 / 2024-09-24 前 / 924 后）</label>
+        <p class="hintp">924 是行情拐点：之前利率单边下行，股票天然跑输国债，容易造成因子伪失效；之后市场逻辑切换，需单独评估。</p>
+      </div>
+      <div class="center"><button class="btn" id="runBtn">▶ 运行回测</button><div class="hintp" id="runHint"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 实验室 3：回测结果 ========== -->
+<div class="lpage" id="l2">
+  <div id="resHead"></div>
+  <div class="panel" id="icPanel">
+    <h4>分档前瞻收益 IC 检验</h4>
+    <div class="metrics m4" id="icKpi"></div>
+    <div class="legend" id="icLeg"><span><i style="background:var(--s1)"></i>前瞻收益均值</span><span><i class="tick"></i>前瞻收益中位数</span></div>
+    <div class="chart" id="icChart"></div>
+    <div class="tw"><table id="icTable"></table></div>
+    <p class="hintp">IC = 信号变量与未来 N 日收益的 Spearman 秩相关，&gt;0.1 算有用，&gt;0.15 较强。前瞻窗口互相重叠，p 值偏乐观，只作参考。</p>
+  </div>
+  <div class="panel" id="navPanel">
+    <h4>双阈值净值回测</h4>
+    <div class="rule" id="ruleTxt"></div>
+    <div class="metrics" id="navKpi"></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>策略净值</span><span><i style="background:var(--s2)"></i>买入持有（标的本身）</span><span><i class="dash"></i>沪深300（大盘基准）</span><span><b class="tri up">▲</b>加仓</span><span><b class="tri dn">▼</b>减仓</span></div>
+    <div class="chart" id="navChart"></div>
+    <div class="cap" id="navCap"></div>
+    <h4 class="h4b">信号变量走势：<span id="sigName"></span> <span class="pill pB" id="sigKind"></span></h4>
+    <div class="cap">与上方净值图时间轴对齐；虚线 = 买/卖阈值；三角 = 触发点</div>
+    <div class="chart" id="sigChart"></div>
+    <div class="cap" id="sigCap"></div>
+    <details class="trades"><summary id="trSum">交易记录</summary><div class="tw"><table id="trTable"></table></div></details>
+  </div>
+  <div class="panel" id="segPanel" hidden>
+    <h4>924 分段对比</h4>
+    <div class="tw"><table id="segTable"></table></div>
+  </div>
+</div>
+
+</div><!--modeB-->
+
+</div>
+
+<script>
+const D={
+ timeline:[{d:'2016',t:'十三五去产能',p:'去产能过猛→煤价370暴涨到600+，是2017超跌的背景，逼出长协制度'},
+  {d:'2016底',t:'长协制度诞生',p:'中长期合同，应对煤价失控。后来570–770绿色区间的起源'},
+  {d:'2021-10',t:'电价市场化（1439号文）',p:'燃煤电价±20%浮动 → 电价能涨能跌，A9/A10电价下行=政策驱动'},
+  {d:'2022-02',t:'长协绿色区间（303号文）',p:'长协煤价被框平 → 只有现货（A1）才反映真实成本，这是用现货的原因'},
+  {d:'2021–25',t:'十四五风光大超预期',p:'风光优先上网、占比超规划 → 火电发电空间被永久挤（A13挤占）'},
+  {d:'2026-08',t:'十五五煤电转"调节性电源"',p:'煤电从主体电源 → 支撑调节性，火电红利化，煤价周期机会减少'}],
+ plans:[
+  {n:'十三五',span:'2016–2020',status:'✅ 目标达成',done:1,details:['煤炭去产能 → ✅超额（煤矿→4700处）','非化石占比2020达15% → ✅达成','非化石发电装机占39% → ✅可再生装机世界第一','电力总装机20亿千瓦 → ✅2019已破','煤电占比控制11亿内 → ✅首破50%（49.1%）']},
+  {n:'十四五',span:'2021–2025',status:'✅ 超额达成',done:1,details:['非化石消费20% → ✅超额（每年+1点）','非化石发电量39% → ✅达成','可再生装机 → ✅大超（23.4亿/占60%）','能耗强度降13.5% → ✅超额（降16.1%）','长协570–770 → ✅落地','煤电三改 → ✅定位转保障+调节']},
+  {n:'十五五',span:'2026–2030',status:'⏳ 未到期',done:0,details:['非化石占比2030达25% → ⏳未到期','风光装机12亿+ → ⚠️2024已超至14亿（提前）','煤电转支撑调节性电源 → ⏳落地中','新型电力系统2030初步建成 → ⏳','前两轮均超额 → 本轮可信度高']}],
+ qushe:[['⬆ 优先','B1 股息率−国债利差','红利资产核心定价锚'],['⬆ 优先','股息率+分红覆盖率','红利强度+防高股息陷阱'],
+  ['⬆ 优先','自由现金流类','潜在红利，可能比现成高股息更值钱'],['⬇ 降权','A1–A8 煤价类','煤价被框稳→冲击少→降为背景监控'],
+  ['⬇ 改用途','电价/风光挤占','不做择时，改做A-永久判定器'],['✕ 预排除','纯技术超卖（RSI/布林）','无因果链，实测不显著'],
+  ['✕ 预排除','纯年/月频低频因子','频次太低，做不了交易信号']],
+ mvm:[['高FCF',6.2,1.8],['FCF+抗跌',7.6,0.9],['前期抗跌',5.2,-2.1],['低波动',0.5,0.7]]
+};
+document.getElementById('timeline').innerHTML=D.timeline.map(x=>'<div class="tli"><div class="d">'+x.d+'</div><div class="c"><b>'+x.t+'</b><p>'+x.p+'</p></div></div>').join('');
+document.getElementById('plans').innerHTML=D.plans.map(x=>'<button class="flip" aria-label="'+x.n+' 目标与实现"><div class="flipin"><div class="flipf"><div class="st">'+x.n+'</div><div class="sp">'+x.span+'</div><div class="stat'+(x.done?'':' wait')+'">'+x.status+'</div><div class="hint">点击看目标 vs 实现 →</div></div><div class="flipb">'+x.details.map(d=>'<div class="r">'+d+'</div>').join('')+'</div></div></button>').join('');
+document.querySelectorAll('.flip').forEach(f=>f.addEventListener('click',()=>f.classList.toggle('on')));
+document.getElementById('qushe').innerHTML='<tr><th>取舍</th><th>因子</th><th>说明</th></tr>'+D.qushe.map(r=>{const c=r[0][0]==='⬆'?'up':r[0][0]==='✕'?'dn':'';return '<tr><td class="'+c+'" style="white-space:nowrap;font-weight:600">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
+// 均值 vs 中位数条形图：刻度 -2.5% .. +7.5%，0 轴在 25%
+(function(){const lo=-2.5,hi=7.5,pos=v=>(v-lo)/(hi-lo)*100,z=pos(0);
+ const bar=(v,cls)=>{const a=Math.min(pos(v),z),w=Math.abs(pos(v)-z);const lab=(v>0?'+':'−')+Math.abs(v).toFixed(1)+'%';
+  const lp=v>=0?'left:calc(100% + 6px)':'right:calc(100% + 6px)';
+  return '<div class="b '+cls+(v<0&&cls==='med'?' neg':'')+'" style="left:'+a+'%;width:'+w+'%"><span style="'+lp+'">'+lab+'</span></div>'};
+ document.getElementById('mvm').innerHTML='<div class="legend"><span><i style="background:var(--acln)"></i>均值超额</span><span><i style="background:var(--ac)"></i>中位数</span></div>'+
+  D.mvm.map(r=>'<div class="row"><div class="nm">'+r[0]+'</div><div class="tr"><div class="ax"></div>'+bar(r[1],'mean')+bar(r[2],'med')+'</div></div>').join('');})();
+// 归因标签：点击展开明细行（手机上没有悬停）
+document.querySelectorAll('.pill[data-why]').forEach(p=>{p.title=p.dataset.why;p.addEventListener('click',()=>{
+ const tr=p.closest('tr'),nx=tr.nextElementSibling;if(nx&&nx.classList.contains('why')){nx.remove();return}
+ const r=document.createElement('tr');r.className='why';r.innerHTML='<td colspan="'+tr.children.length+'"></td>';r.firstChild.textContent=p.dataset.why;tr.after(r)})});
+function ft(el){const d=el.nextElementSibling;el.classList.toggle('open');d.hidden=!d.hidden}
+function go(i){document.querySelectorAll('.tabs[data-m="a"] .tab').forEach((t,j)=>t.classList.toggle('on',i===j));
+ document.querySelectorAll('#modeA .page').forEach((p,j)=>p.classList.toggle('on',i===j));window.scrollTo(0,0);
+ try{localStorage.setItem('tab',i)}catch(e){}}
+try{const s=+localStorage.getItem('tab');if(s>0&&s<4)go(s)}catch(e){}
+</script>
+<script>
+/* ===== 回测实验室：数据层 + 19 信号 + 引擎 + 图表（纯前端） ===== */
+(function(){
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const fin=Number.isFinite;
+const pct=(v,d=2)=>fin(v)?(v*100).toFixed(d)+'%':'–';
+const num=(v,d=4)=>fin(v)?v.toFixed(d):'–';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- 文件清单（与 backend/app/data_cache 同名） ---------- */
+const STOCKS=[['600900','长江电力','水电'],['601985','中国核电','核电'],['003816','中国广核','核电'],['600011','华能国际','火电'],['601088','中国神华','煤电一体']];
+const IDX=[['801161.SWI','申万电力'],['H30199.CSI','中证电力'],['000688.SH','科创50'],['H30184.CSI','中证半导体'],['000922.SH','中证红利'],['000300.SH','沪深300']];
+const STOCK_COLS=['date','open','close','dv_ttm','pb','pe','amount','turnover'];
+const SPEC={};
+STOCKS.forEach(s=>SPEC[s[0]+'.csv']={cols:STOCK_COLS,label:s[1]});
+IDX.forEach(s=>SPEC[s[0]+'.csv']={cols:['date','close'],label:s[1]});
+SPEC['国债10Y.csv']={cols:['date','yield'],label:'10年期国债收益率'};
+SPEC['两市总成交额.csv']={cols:['date','total_amount'],label:'沪深两市总成交额'};
+const ORDER=Object.keys(SPEC).sort();
+const FILES={};
+
+/* ---------- 合成示例数据（固定种子，可复现） ---------- */
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20260824);
+function gauss(){let u=0;while(!u)u=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*R())}
+const HOL=[['2018-02-15','2018-02-21'],['2019-02-04','2019-02-10'],['2020-01-24','2020-02-02'],['2021-02-11','2021-02-17'],['2022-01-31','2022-02-06'],['2023-01-21','2023-01-27'],['2024-02-10','2024-02-17'],['2025-01-28','2025-02-04'],['2026-02-15','2026-02-23']];
+function tradingDays(a,b){const o=[];const d=new Date(a+'T00:00:00Z'),e=new Date(b+'T00:00:00Z');
+  while(d<=e){const w=d.getUTCDay(),s=d.toISOString().slice(0,10),md=s.slice(5);
+    const hol=(md>='10-01'&&md<='10-07')||md==='01-01'||(md>='05-01'&&md<='05-03')||HOL.some(h=>s>=h[0]&&s<=h[1]);
+    if(w&&w<6&&!hol)o.push(s);d.setUTCDate(d.getUTCDate()+1)}return o}
+function makeSample(){
+  const D=tradingDays('2018-01-02','2026-08-24'),n=D.length;
+  const mk=D.map(()=>gauss()*0.0115);
+  // 电力板块因子：在研究里出现过的几段板块超跌附近放入下行冲击
+  const shocks=[['2018-10-10',45],['2020-03-20',40],['2022-09-01',40],['2024-06-01',45],['2026-02-20',50]];
+  const sec=D.map(()=>gauss()*0.006);
+  shocks.forEach(([s,len])=>{const i=D.findIndex(d=>d>=s);for(let k=0;k<len&&i+k<n;k++)sec[i+k]-=0.0042});
+  const yr=d=>+d.slice(0,4);
+  function path(s0,mu,vol,beta,sb,i0){const sig=vol/Math.sqrt(252),id=Math.sqrt(Math.max(sig*sig-beta*beta*0.0115*0.0115-sb*sb*0.006*0.006,1e-6));
+    const c=new Array(n).fill(NaN),o=new Array(n).fill(NaN);let lp=Math.log(s0);
+    for(let t=i0;t<n;t++){const r=mu/252-sig*sig/2+beta*mk[t]+sb*sec[t]+id*gauss();const prev=Math.exp(lp);lp+=r;c[t]=Math.exp(lp);
+      o[t]=t===i0?c[t]*(1-0.003*gauss()):prev*Math.exp(0.3*r+0.003*gauss())}
+    return{c,o}}
+  const out={};
+  const idxP={'801161.SWI':[2600,0.06,0.2,0.5,1],'H30199.CSI':[2200,0.06,0.21,0.5,1],'000688.SH':[1100,-0.01,0.34,1.1,0],'H30184.CSI':[3200,0.08,0.4,1.3,0],'000922.SH':[4400,0.07,0.17,0.6,0.3],'000300.SH':[4080,0.015,0.22,1,0]};
+  for(const k in idxP){const [s0,mu,vol,b,sb]=idxP[k];const i0=k==='000688.SH'?D.indexOf('2019-12-31'):0;const p=path(s0,mu,vol,b,sb,i0);
+    out[k+'.csv']={date:D.slice(i0),close:p.c.slice(i0)}}
+  const stP={'600900':[90,0.15,0.21,0.35,0.7,3.6,2.8,19,2.4e9],'601985':[11,0.08,0.3,0.7,0.6,2.0,2.1,22,1.2e9],'003816':[4,0.05,0.27,0.6,0.6,2.9,1.8,18,6e8],'600011':[10,0.03,0.34,0.6,1.2,3.4,1.2,25,9e8],'601088':[30,0.12,0.27,0.6,0.8,6.0,1.1,9,1.6e9]};
+  for(const k in stP){const [s0,mu,vol,b,sb,dv0,pb0,pe0,amt0]=stP[k];const i0=k==='003816'?D.indexOf('2019-08-26'):0;const p=path(s0,mu,vol,b,sb,i0);
+    const cols={date:[],open:[],close:[],dv_ttm:[],pb:[],pe:[],amount:[],turnover:[]};let ar=0;const shares=amt0/(s0*0.005);
+    const fac={};for(let y=2017;y<=2026;y++)fac[y]={d:Math.pow(1.07,y-2017)*Math.exp(0.06*gauss()),b:Math.pow(1.08,y-2017),e:Math.pow(1.06,y-2017)*Math.exp(0.1*gauss())};
+    for(let t=i0;t<n;t++){const d=D[t],y=yr(d),fy=d.slice(5)>='05-01'?y-1:y-2;const f=fac[Math.max(2017,fy)];
+      const r=t>i0?Math.log(p.c[t]/p.c[t-1]):0;ar=0.95*ar+0.31*gauss();
+      cols.date.push(d);cols.open.push(p.o[t]);cols.close.push(p.c[t]);
+      cols.dv_ttm.push(dv0*s0*f.d/p.c[t]);cols.pb.push(p.c[t]/(s0/pb0*f.b));cols.pe.push(p.c[t]/(s0/pe0*f.e));
+      const a=amt0*Math.exp(0.35*ar)*(1+18*Math.abs(r))*(p.c[t]/s0)**0.5;cols.amount.push(a);cols.turnover.push(a/(p.c[t]*shares)*100)}
+    out[k+'.csv']=cols}
+  const yi=D.indexOf('2026-08-20');let ou=0;const yd={date:[],yield:[]};
+  for(let t=0;t<=yi;t++){ou=0.985*ou+0.02*gauss();const tr=3.92-2.1*Math.min(1,t/(yi*0.92));yd.date.push(D[t]);yd.yield.push(Math.min(4.6,Math.max(1.6,tr+ou)))}
+  out['国债10Y.csv']=yd;
+  let a2=0;const ta={date:[],total_amount:[]};D.forEach((d,t)=>{a2=0.96*a2+0.07*gauss();ta.date.push(d);ta.total_amount.push(6.5e11*Math.exp(a2)*Math.pow(1.13,t/244))});
+  out['两市总成交额.csv']=ta;
+  for(const k in out){const cols=SPEC[k].cols;FILES[k]={cols,data:out[k],n:out[k].date.length,mock:true}}
+}
+
+/* ---------- CSV 载入（真实数据） ---------- */
+function parseCSV(name,text){
+  let lines=text.replace(/^﻿/,'').split(/\r?\n/).filter(l=>l.trim()!=='');let mock=false;
+  while(lines.length&&lines[0].trim().startsWith('#')){if(/mock/i.test(lines[0]))mock=true;lines.shift()}
+  const head=lines.shift().split(',').map(s=>s.trim());const data={};head.forEach(h=>data[h]=[]);
+  for(const l of lines){const p=l.split(',');head.forEach((h,j)=>{const v=(p[j]||'').trim();data[h].push(h==='date'?v.slice(0,10):(v===''?NaN:parseFloat(v)))})}
+  return{cols:head,data,n:(data.date||[]).length,mock};
+}
+function validate(name){
+  const f=FILES[name],sp=SPEC[name];if(!f)return{st:'e',msg:'缺少文件'};
+  const miss=sp.cols.filter(c=>!f.cols.includes(c));if(miss.length)return{st:'e',msg:'缺少列：'+miss.join(', ')};
+  const d=f.data.date;for(let i=1;i<d.length;i++)if(!(d[i]>d[i-1]))return{st:'e',msg:'日期需升序且无重复（第 '+(i+1)+' 行）'};
+  if(f.mock)return{st:'w',msg:'示例数据（合成），不是真实行情',mock:true};
+  const v=f.data.close||f.data.yield||f.data.total_amount;let jumps=0,nan=0;
+  for(let i=0;i<v.length;i++){if(!fin(v[i]))nan++;else if(f.data.close&&i&&fin(v[i-1])&&Math.abs(v[i]/v[i-1]-1)>0.11)jumps++}
+  const notes=[];if(jumps)notes.push('有 '+jumps+' 个交易日涨跌幅超 ±11%（可能停复牌/复权跳变）');
+  if(f.data.open&&f.data.close){let bad=0;for(let i=0;i<f.n;i++){const r=f.data.close[i]/f.data.open[i];if(fin(r)&&(r<0.85||r>1.18))bad++}if(bad)notes.push(bad+' 天 close/open 比值异常（检查前/后复权是否同口径）')}
+  if(nan)notes.push(nan+' 个空值');
+  return{st:notes.length?'w':'p',msg:notes.join('；')};
+}
+
+/* ---------- 数据核验页 ---------- */
+let verified=false,openPv=null;
+function renderVerify(){
+  let p=0,w=0,e=0,mock=0,last='';
+  const rows=ORDER.map(k=>{const v=validate(k),f=FILES[k];if(v.st==='p')p++;else if(v.st==='w')w++;else e++;if(v.mock)mock++;
+    if(f&&STOCKS.some(s=>s[0]+'.csv'===k)){const ld=f.data.date[f.n-1];if(ld>last)last=ld}
+    const pill=v.st==='p'?'<span class="pill pB">通过</span>':v.st==='w'?'<span class="pill pC">'+(v.mock?'示例':'警告')+'</span>':'<span class="pill pA">错误</span>';
+    return '<tr class="'+(v.st==='p'?'':v.mock?'':v.st)+'" data-f="'+esc(k)+'"><td><button class="lnk" data-pv="'+esc(k)+'">'+esc(k)+'</button><div class="hintp" style="margin:0">'+esc(SPEC[k].label)+'</div></td><td class="n">'+(f?f.n:'–')+'</td><td class="n">'+(f?f.data.date[0]:'–')+'</td><td class="n">'+(f?f.data.date[f.n-1]:'–')+'</td><td>'+pill+'</td><td>'+esc(v.msg||'')+(f?' <button class="lnk sm" data-pv="'+esc(k)+'">预览列统计</button>':'')+'</td></tr>'}).join('');
+  $('#vTable').innerHTML='<tr><th>文件</th><th>行数</th><th>首日</th><th>末日</th><th>状态</th><th>提示</th></tr>'+rows;
+  $('#vStats').innerHTML=[['文件总数',ORDER.length,''],['通过',p,'g'],['警告/示例',w,'o'],['错误',e,'r']].map(x=>'<div class="stat"><div class="v '+x[2]+'">'+x[1]+'</div><div class="k">'+x[0]+'</div></div>').join('');
+  $('#lastDate').textContent=last||'—';
+  const d=new Date();$('#today').textContent=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('#mockBadge').hidden=$('#mockNote').hidden=!mock;
+  $('#verifyBtn').disabled=e>0;$('#verifyBtn').textContent=e>0?'有 '+e+' 份文件错误，修好再继续':'我已核验，进入信号配置 →';
+  if(openPv)showPreview(openPv,true);
+  updateRunBtn();
+}
+function showPreview(k,keep){
+  $$('tr.pv').forEach(r=>r.remove());
+  if(!keep&&openPv===k){openPv=null;return}openPv=k;
+  const f=FILES[k];if(!f)return;const tr=$('#vTable tr[data-f="'+CSS.escape(k)+'"]');if(!tr)return;
+  const cols=f.cols;const stat=cols.filter(c=>c!=='date').map(c=>{const a=f.data[c].filter(fin);const mn=Math.min(...a),mx=Math.max(...a),av=a.reduce((s,x)=>s+x,0)/(a.length||1);
+    return '<tr><td>'+esc(c)+'</td><td>'+a.length+'</td><td>'+(f.n-a.length)+'</td><td>'+fmtV(mn)+'</td><td>'+fmtV(mx)+'</td><td>'+fmtV(av)+'</td></tr>'}).join('');
+  const row=i=>'<tr>'+cols.map(c=>'<td>'+(c==='date'?f.data[c][i]:fmtV(f.data[c][i]))+'</td>').join('')+'</tr>';
+  let body='';for(let i=0;i<Math.min(20,f.n);i++)body+=row(i);if(f.n>40)body+='<tr class="gap"><td colspan="'+cols.length+'">… 省略 '+(f.n-40)+' 行 …</td></tr>';for(let i=Math.max(20,f.n-20);i<f.n;i++)body+=row(i);
+  const r=document.createElement('tr');r.className='pv';
+  r.innerHTML='<td colspan="6"><div class="pvt" style="margin-bottom:10px"><table><tr><th>列</th><th>非空</th><th>空值</th><th>最小</th><th>最大</th><th>均值</th></tr>'+stat+'</table></div><div class="pvt"><table><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+body+'</table></div></td>';
+  tr.after(r);
+}
+function fmtV(v){if(!fin(v))return '';const a=Math.abs(v);return a>=1e8?(v/1e8).toFixed(2)+'亿':a>=1e4?v.toFixed(0):a>=100?v.toFixed(2):v.toFixed(4)}
+
+/* ---------- 信号库 ---------- */
+const SIG=[
+ {id:1,cat:'估值',name:'股息率历史分位',dir:'high',kind:'pct',p:{win:504,buy:0.7,sell:0.3},desc:'TTM 股息率在过去 N 个交易日中的分位。高分位 = 相对自身历史便宜。'},
+ {id:2,cat:'估值',name:'股息率-国债利差分位',dir:'high',kind:'pct',p:{win:504,buy:0.7,sell:0.3},desc:'（股息率 − 10Y 国债）的历史分位。高利差 = 相对国债有吸引力。主研究对象。'},
+ {id:3,cat:'估值',name:'PB 历史分位',dir:'low',kind:'pct',p:{win:504,buy:0.3,sell:0.7},desc:'市净率的历史分位，低分位买入。'},
+ {id:4,cat:'估值',name:'DDM 折价率(月频)',off:'默认关'},
+ {id:5,cat:'价格',name:'RSI(12) 超卖',dir:'low',kind:'abs',p:{n:12,buy:30,sell:70},desc:'12 日 RSI（Wilder 平滑，注意是 12 日不是 14 日）。≤ 买入阈值视为超卖。'},
+ {id:6,cat:'价格',name:'布林带下轨突破',dir:'low',kind:'abs',p:{n:20,k:2,buy:0,sell:1},desc:'变量为 %B =（收盘 − 下轨）/（上轨 − 下轨）。跌破下轨（%B ≤ 0）买入，触及上轨卖出。'},
+ {id:7,cat:'价格',name:'年线偏离度',dir:'low',kind:'abs',p:{n:250,buy:-0.1,sell:0.1},desc:'收盘价 / 250 日均线 − 1。跌破年线一定幅度买入。'},
+ {id:8,cat:'价格',name:'52 周高点回撤',dir:'low',kind:'abs',p:{n:252,buy:-0.25,sell:-0.05},desc:'收盘价相对过去 252 日最高价的回撤。回撤 ≥ 25% 买入。'},
+ {id:9,cat:'价格',name:'12-1 月动量反转',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},desc:'过去 12 个月剔除最近 1 个月的收益，取历史分位。最惨的动量分位买入。'},
+ {id:10,cat:'相对',name:'相对中证红利超额',dir:'low',kind:'pct',p:{n:60,win:504,buy:0.1,sell:0.7},needs:['000922.SH'],desc:'标的 N 日收益 − 中证红利 N 日收益，取历史分位。跑输红利时买入。'},
+ {id:11,cat:'相对',name:'相对沪深 300 超额',dir:'low',kind:'pct',p:{n:60,win:504,buy:0.05,sell:0.5},needs:['000300.SH'],desc:'标的 60 日收益 − 沪深300 60 日收益，取历史分位。≤ 5% 分位就是研究里的"超跌"定义。'},
+ {id:12,cat:'相对',name:'电力 / 科创 50 比价分位',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},needs:['801161.SWI','000688.SH'],desc:'申万电力 / 科创50 的比价分位。电力相对成长股便宜时买入。科创50 从 2019-12-31 起才有数据。'},
+ {id:13,cat:'相对',name:'电力 / 半导体比价分位',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},needs:['801161.SWI','H30184.CSI'],desc:'申万电力 / 中证半导体的比价分位。'},
+ {id:14,cat:'相对',name:'水火核内部相对强弱',off:'默认关'},
+ {id:15,cat:'资金',name:'板块成交额占比(绝对值)',dir:'low',kind:'abs',p:{n:20,buy:null,sell:null},needs:['两市总成交额.csv'],desc:'标的 20 日均成交额 / 两市 20 日均总成交额，用绝对值口径，不做分位。阈值初值按样本分布的 20% / 70% 预填，请按需改成固定值。'},
+ {id:16,cat:'资金',name:'换手率分位',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},desc:'换手率的历史分位，低分位（交易冷清）买入。'},
+ {id:17,cat:'跨资产',name:'火电 vs 煤价背离',off:'淘汰'},
+ {id:18,cat:'跨资产',name:'水电 vs 国债背离',dir:'low',kind:'abs',p:{n:60,win:504,buy:-0.4,sell:0.2},only:'600900',desc:'60 日股价收益分位 − 60 日国债利率下行幅度分位。利率在降、股价却没涨（背离）时买入。仅水电（长江电力）。'},
+ {id:19,cat:'跨资产',name:'电煤价差 Z-score',off:'淘汰'}];
+const PL={win:'回看窗口（交易日）',n:'计算窗口（交易日）',k:'标准差倍数',buy:'买入阈值',sell:'卖出阈值'};
+
+/* ---------- 工具函数 ---------- */
+function align(fileName,col,dates){const f=FILES[fileName];const out=new Array(dates.length).fill(NaN);if(!f)return out;
+  const m=new Map();f.data.date.forEach((d,i)=>m.set(d,f.data[col][i]));
+  // 只为对齐日历做最多 5 日前向填充（国债/指数假日差异），个股字段本身不填充
+  let lastV=NaN,age=99;for(let i=0;i<dates.length;i++){const v=m.get(dates[i]);if(v!==undefined&&fin(v)){lastV=v;age=0;out[i]=v}else{age++;if(age<=5)out[i]=lastV}}return out}
+function rollPct(x,w){const o=new Array(x.length).fill(NaN),minObs=Math.floor(w/2);
+  for(let t=0;t<x.length;t++){const v=x[t];if(!fin(v))continue;let lt=0,eq=0,c=0;for(let j=Math.max(0,t-w+1);j<=t;j++){const u=x[j];if(!fin(u))continue;c++;if(u<v)lt++;else if(u===v)eq++}
+    if(c>=minObs)o[t]=(lt+0.5*eq)/c}return o}
+function sma(x,n){const o=new Array(x.length).fill(NaN);let s=0,c=0;const q=[];for(let t=0;t<x.length;t++){q.push(x[t]);if(fin(x[t])){s+=x[t];c++}if(q.length>n){const r=q.shift();if(fin(r)){s-=r;c--}}if(q.length===n&&c===n)o[t]=s/n}return o}
+function rstd(x,n){const m=sma(x,n),o=new Array(x.length).fill(NaN);for(let t=n-1;t<x.length;t++){if(!fin(m[t]))continue;let s=0;for(let j=t-n+1;j<=t;j++)s+=(x[j]-m[t])**2;o[t]=Math.sqrt(s/n)}return o}
+function rmax(x,n){const o=new Array(x.length).fill(NaN);for(let t=n-1;t<x.length;t++){let m=-Infinity;for(let j=t-n+1;j<=t;j++)if(fin(x[j])&&x[j]>m)m=x[j];if(m>-Infinity)o[t]=m}return o}
+function retN(x,n){return x.map((v,t)=>t>=n?v/x[t-n]-1:NaN)}
+function rsi(c,n){const o=new Array(c.length).fill(NaN);let g=0,l=0;for(let t=1;t<c.length;t++){const d=c[t]-c[t-1];if(!fin(d))continue;const up=Math.max(d,0),dn=Math.max(-d,0);
+  if(t<=n){g+=up/n;l+=dn/n;if(t===n)o[t]=l===0?100:100-100/(1+g/l)}else{g=(g*(n-1)+up)/n;l=(l*(n-1)+dn)/n;o[t]=l===0?100:100-100/(1+g/l)}}return o}
+function quant(a,q){const s=a.filter(fin).sort((x,y)=>x-y);if(!s.length)return NaN;const p=(s.length-1)*q,i=Math.floor(p);return s[i]+(s[Math.min(i+1,s.length-1)]-s[i])*(p-i)}
+function median(a){return quant(a,0.5)}
+
+/* ---------- 标的上下文 ---------- */
+function ctxFor(code){const f=FILES[code+'.csv'];if(!f)return null;const dates=f.data.date;
+  return{code,dates,open:f.data.open,close:f.data.close,dv:f.data.dv_ttm,pb:f.data.pb,amount:f.data.amount,turnover:f.data.turnover,
+    idx:k=>align(k+'.csv','close',dates),yld:()=>align('国债10Y.csv','yield',dates),tot:()=>align('两市总成交额.csv','total_amount',dates)}}
+
+function computeSignal(s,c,p){
+  let raw;
+  switch(s.id){
+    case 1:raw=c.dv.slice();break;
+    case 2:{const y=c.yld();raw=c.dv.map((v,i)=>v-y[i]);break}
+    case 3:raw=c.pb.slice();break;
+    case 5:raw=rsi(c.close,p.n);break;
+    case 6:{const m=sma(c.close,p.n),sd=rstd(c.close,p.n);raw=c.close.map((v,i)=>{const lo=m[i]-p.k*sd[i],hi=m[i]+p.k*sd[i];return hi>lo?(v-lo)/(hi-lo):NaN});break}
+    case 7:{const m=sma(c.close,p.n);raw=c.close.map((v,i)=>v/m[i]-1);break}
+    case 8:{const m=rmax(c.close,p.n);raw=c.close.map((v,i)=>v/m[i]-1);break}
+    case 9:raw=c.close.map((v,t)=>t>=252?c.close[t-21]/c.close[t-252]-1:NaN);break;
+    case 10:case 11:{const ix=c.idx(s.id===10?'000922.SH':'000300.SH'),a=retN(c.close,p.n),b=retN(ix,p.n);raw=a.map((v,i)=>v-b[i]);break}
+    case 12:case 13:{const e=c.idx('801161.SWI'),o=c.idx(s.id===12?'000688.SH':'H30184.CSI');raw=e.map((v,i)=>v/o[i]);break}
+    case 15:{const a=sma(c.amount,p.n),t=sma(c.tot(),p.n);raw=a.map((v,i)=>v/t[i]);break}
+    case 16:raw=c.turnover.slice();break;
+    case 18:{const y=c.yld();const a=rollPct(retN(c.close,p.n),p.win);const dy=y.map((v,t)=>t>=p.n?-(v-y[t-p.n]):NaN);const b=rollPct(dy,p.win);raw=a.map((v,i)=>v-b[i]);break}
+  }
+  raw=raw.map(v=>fin(v)?v:NaN);
+  const trig=s.kind==='pct'?rollPct(raw,p.win):raw;
+  return{raw,trig};
+}
+
+/* ---------- 回测引擎（双阈值渐进仓位） ---------- */
+function rangeIdx(dates,a,b){let i0=dates.findIndex(d=>d>=a),i1=-1;for(let i=dates.length-1;i>=0;i--)if(dates[i]<=b){i1=i;break}return i0<0||i1<i0+30?null:[i0,i1]}
+function runEngine(c,trig,s,p,g,i0,i1){
+  const n=i1-i0+1,hs=c.idx('000300.SH');
+  const nav=new Array(n),bh=new Array(n),bm=new Array(n),pos=new Array(n),daily=new Array(n).fill(0);
+  let pv=g.floor,v=1;const trades=[];nav[0]=1;pos[0]=pv;
+  const hs0=hs[i0],c0=c.close[i0];bh[0]=1;bm[0]=fin(hs0)?1:NaN;
+  const cross=k=>{const a=trig[k-1],b=trig[k];if(!fin(a)||!fin(b))return 0;
+    if(s.dir==='high'){if(a<p.buy&&b>=p.buy)return 1;if(a>p.sell&&b<=p.sell)return -1}
+    else{if(a>p.buy&&b<=p.buy)return 1;if(a<p.sell&&b>=p.sell)return -1}return 0};
+  for(let t=i0+1;t<=i1;t++){const k=t-i0,sday=t-2;let pn=pv;
+    // T-1 日信号（sday）→ T+1 日开盘（t）成交
+    if(sday>i0){const x=cross(sday);if(x>0)pn=Math.min(g.cap,+(pv+g.step).toFixed(6));else if(x<0)pn=Math.max(g.floor,+(pv-g.step).toFixed(6))}
+    const op=fin(c.open[t])?c.open[t]:c.close[t-1];
+    const r1=op/c.close[t-1]-1,r2=c.close[t]/op-1;
+    const before=v;v*=(1+pv*r1)*(1+pn*r2);
+    if(pn!==pv){v*=1-g.cost/2*Math.abs(pn-pv);trades.push({t,k,date:c.dates[t],sigDate:c.dates[sday],act:pn>pv?'加仓':'减仓',from:pv,to:pn,price:op,sv:trig[sday]})}
+    daily[k]=v/before-1;pv=pn;nav[k]=v;pos[k]=pv;bh[k]=c.close[t]/c0;bm[k]=fin(hs[t])&&fin(hs0)?hs[t]/hs0:NaN}
+  const days=n-1,ann=x=>Math.pow(x,252/days)-1;
+  let peak=1,mdd=0;nav.forEach(x=>{if(x>peak)peak=x;mdd=Math.min(mdd,x/peak-1)});
+  const dr=daily.slice(1),mu=dr.reduce((a,b)=>a+b,0)/dr.length,sd=Math.sqrt(dr.reduce((a,b)=>a+(b-mu)**2,0)/(dr.length-1));
+  const hold=dr.filter((x,i)=>pos[i]>0||pos[i+1]>0);
+  const m={ann:ann(nav[n-1]),bh:ann(bh[n-1]),mdd,sharpe:sd>1e-12?(mu-g.rf/252)/sd*Math.sqrt(252):NaN,trades:trades.length,holdDays:pos.filter(x=>x>0).length,
+    win:hold.length?hold.filter(x=>x>0).length/hold.length:NaN,buys:trades.filter(x=>x.act==='加仓').length,sells:trades.filter(x=>x.act==='减仓').length};
+  m.ex=m.ann-m.bh;m.calmar=mdd<0?m.ann/Math.abs(mdd):NaN;
+  return{nav,bh,bm,pos,trades,m,i0,i1};
+}
+function rank(a){const idx=a.map((v,i)=>[v,i]).sort((x,y)=>x[0]-y[0]),r=new Array(a.length);for(let i=0;i<idx.length;){let j=i;while(j+1<idx.length&&idx[j+1][0]===idx[i][0])j++;const rr=(i+j)/2+1;for(let k=i;k<=j;k++)r[idx[k][1]]=rr;i=j+1}return r}
+function erfc(x){const t=1/(1+0.5*x),y=t*Math.exp(-x*x-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?y:2-y}
+function runIC(c,v,N,i0,i1){const xs=[],ys=[];
+  for(let t=i0;t<=i1-N;t++){const a=v[t],f=c.close[t+N]/c.close[t]-1;if(fin(a)&&fin(f)){xs.push(a);ys.push(f)}}
+  const n=xs.length;if(n<30)return null;
+  const rx=rank(xs),ry=rank(ys),mx=(n+1)/2;let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){sxy+=(rx[i]-mx)*(ry[i]-mx);sxx+=(rx[i]-mx)**2;syy+=(ry[i]-mx)**2}
+  const ic=sxy/Math.sqrt(sxx*syy),tt=Math.abs(ic)*Math.sqrt((n-2)/Math.max(1e-12,1-ic*ic)),pv=erfc(tt/Math.SQRT2);
+  const ord=xs.map((x,i)=>i).sort((a,b)=>xs[a]-xs[b]||a-b),q=[];
+  for(let g=0;g<5;g++){const lo=Math.round(g*n/5),hi=Math.round((g+1)*n/5);const ids=ord.slice(lo,hi);const fv=ids.map(i=>ys[i]);
+    q.push({g:'Q'+(g+1),n:ids.length,v:ids.reduce((s,i)=>s+xs[i],0)/ids.length,mean:fv.reduce((s,x)=>s+x,0)/fv.length,med:median(fv)})}
+  return{ic,p:pv,n,q};
+}
+
+/* ---------- 配置页 ---------- */
+let cur=2;const PARAMS={};SIG.forEach(s=>{if(s.p)PARAMS[s.id]={...s.p}});
+function buildCfg(){
+  $('#cStock').innerHTML=STOCKS.map(s=>'<option value="'+s[0]+'">'+s[1]+'（'+s[0]+'）· '+s[2]+'</option>').join('');
+  $('#cN').innerHTML=[5,10,20,30,60,90,120].map(x=>'<option value="'+x+'"'+(x===60?' selected':'')+'>后 '+x+' 个交易日</option>').join('');
+  const cats=[...new Set(SIG.map(s=>s.cat))];
+  $('#sigList').innerHTML='<div class="sg"><h5 style="margin-top:4px">信号库</h5></div>'+cats.map(ct=>'<div class="sg"><h5>'+ct+'</h5>'+SIG.filter(s=>s.cat===ct).map(s=>'<button class="si" data-sig="'+s.id+'"'+(s.off?' disabled':'')+'><span class="no">'+s.id+'</span><span>'+esc(s.name)+'</span>'+(s.off?'<span class="off'+(s.off==='淘汰'?' x':'')+'">'+s.off+'</span>':'')+'</button>').join('')+'</div>').join('');
+  $('#sigList').addEventListener('click',e=>{const b=e.target.closest('[data-sig]');if(b&&!b.disabled){cur=+b.dataset.sig;renderSig()}});
+  $('#cStock').addEventListener('change',()=>{renderSig()});
+  renderSig();
+}
+function renderSig(){
+  const s=SIG.find(x=>x.id===cur),p=PARAMS[cur];
+  $$('.si').forEach(b=>b.classList.toggle('on',+b.dataset.sig===cur));
+  if(s.id===15&&(p.buy==null||p.sell==null)){const c=ctxFor($('#cStock').value);if(c){const r=computeSignal(s,c,p).raw;p.buy=+quant(r,0.2).toPrecision(3);p.sell=+quant(r,0.7).toPrecision(3)}}
+  const isPct=s.kind==='pct';
+  const flds=Object.keys(p).map(k=>{const lab=(isPct&&(k==='buy'||k==='sell'))?(k==='buy'?'买入分位':'卖出分位'):PL[k];const hint=k==='win'&&p[k]===504?' <small>用户口径约 2 年</small>':'';
+    return '<div class="fld"><label for="p_'+k+'">'+lab+hint+'</label><input id="p_'+k+'" data-k="'+k+'" type="number" step="'+(k==='win'||k==='n'?1:'any')+'" value="'+p[k]+'"></div>'}).join('');
+  const rule=(s.dir==='high'?'变量 ≥ 买入阈值（上穿）加仓，≤ 卖出阈值（下穿）减仓':'变量 ≤ 买入阈值（下穿）加仓，≥ 卖出阈值（上穿）减仓');
+  $('#sigPanel').innerHTML='<h4>信号 '+s.id+' · '+esc(s.name)+'</h4><div class="sigmeta">'+s.cat+' · '+(isPct?'分位口径':'绝对值口径')+' · '+rule+'</div><div class="sigdesc">'+esc(s.desc)+'</div><div class="form">'+flds+'</div>';
+  $$('#sigPanel input').forEach(i=>i.addEventListener('input',()=>{const v=parseFloat(i.value);if(fin(v))p[i.dataset.k]=v}));
+  updateRunBtn();
+}
+function updateRunBtn(){const b=$('#runBtn'),h=$('#runHint');if(!b)return;const s=SIG.find(x=>x.id===cur);let msg='';
+  if(!verified)msg='先在「数据核验」里确认数据，才能运行（防止垃圾数据进、垃圾结论出）';
+  else if(s.only&&$('#cStock').value!==s.only)msg='该信号仅适用于长江电力（600900）';
+  else if(!FILES[$('#cStock').value+'.csv'])msg='缺少该标的的数据文件';
+  else if((s.needs||[]).some(f=>!FILES[f.endsWith('.csv')?f:f+'.csv']))msg='缺少该信号需要的数据：'+s.needs.join('、');
+  b.disabled=!!msg;h.textContent=msg}
+function readCfg(){const g=x=>parseFloat($(x).value);return{stock:$('#cStock').value,mode:$('#cMode').value,N:+$('#cN').value,icv:$('#cIcv').value,step:g('#cStep'),floor:g('#cFloor'),cap:g('#cCap'),start:$('#cStart').value,end:$('#cEnd').value,cost:g('#cCost'),rf:g('#cRf'),seg:$('#c924').checked}}
+
+/* ---------- 运行 & 结果 ---------- */
+let RES=null;
+function run(cfg,sid){
+  const s=SIG.find(x=>x.id===sid),p={...PARAMS[sid]},c=ctxFor(cfg.stock);if(!c)return null;
+  if(cfg.floor>cfg.cap)cfg.floor=cfg.cap;
+  const sg=computeSignal(s,c,p),r=rangeIdx(c.dates,cfg.start,cfg.end);if(!r)return{err:'所选时间范围内有效交易日太少（少于 30 天）'};
+  const icVar=cfg.icv==='pct'&&s.kind==='pct'?sg.trig:sg.raw;
+  const out={cfg,s,p,c,sg,i0:r[0],i1:r[1]};
+  out.eng=runEngine(c,sg.trig,s,p,cfg,r[0],r[1]);
+  out.ic=runIC(c,icVar,cfg.N,r[0],r[1]);
+  out.icLabel=icVar===sg.trig?'分位':'原始值';
+  if(cfg.seg){const cut='2024-09-24',segs=[['全周期',cfg.start,cfg.end],['924 前',cfg.start,'2024-09-23'],['924 后',cut,cfg.end]];
+    out.seg=segs.map(([nm,a,b])=>{const rr=rangeIdx(c.dates,a,b);if(!rr)return{nm,na:true};const e=runEngine(c,sg.trig,s,p,cfg,rr[0],rr[1]);return{nm,a:c.dates[rr[0]],b:c.dates[rr[1]],ic:runIC(c,icVar,cfg.N,rr[0],rr[1]),m:e.m}})}
+  return out;
+}
+function renderResult(){
+  const o=RES;if(!o)return;if(o.err){$('#resHead').innerHTML='<div class="warn">'+esc(o.err)+'</div>';return}
+  const st=STOCKS.find(x=>x[0]===o.cfg.stock),e=o.eng,m=e.m,mock=FILES[o.cfg.stock+'.csv'].mock;
+  $('#resHead').innerHTML='<div class="rhead"><h3>'+st[1]+'（'+st[0]+'）· 信号 '+o.s.id+'：'+esc(o.s.name)+(mock?' <span class="mockb">MOCK · 示例数据</span>':'')+'</h3><div class="sub">'+o.c.dates[o.i0]+' ~ '+o.c.dates[o.i1]+' · '+(o.i1-o.i0+1)+' 交易日</div>'+
+    '<div class="chips"><span class="chip g">加仓动作 '+m.buys+' 次</span><span class="chip r">减仓动作 '+m.sells+' 次</span><span class="chip">持仓天数 '+m.holdDays+' / '+(o.i1-o.i0+1)+'（'+pct(m.holdDays/(o.i1-o.i0+1),1)+'）</span></div></div>';
+  const showIC=o.cfg.mode!=='nav',showNav=o.cfg.mode!=='ic';
+  $('#icPanel').hidden=!showIC;$('#navPanel').hidden=!showNav;
+  if(showIC){const ic=o.ic;
+    if(!ic){$('#icKpi').innerHTML='';$('#icTable').innerHTML='';$('#icChart').innerHTML='<div class="empty">有效样本不足 30，算不出 IC。换更长的时间范围或更短的前瞻窗口。</div>'}
+    else{$('#icKpi').innerHTML=[[num(ic.ic),'IC（Spearman）',ic.ic>0.1?'up':ic.ic<-0.1?'dn':''],[num(ic.p),'p-value',''],[ic.n,'有效样本',''],[o.cfg.N+' 日','前瞻窗口 · '+o.icLabel+'口径','']].map(x=>'<div class="met"><div class="v '+x[2]+'">'+x[0]+'</div><div class="k">'+x[1]+'</div></div>').join('');
+      $('#icTable').innerHTML='<tr><th>档位</th><th>样本量</th><th>信号变量均值</th><th>前瞻收益均值</th><th>前瞻收益中位数</th></tr>'+ic.q.map(q=>'<tr><td>'+q.g+'</td><td class="n">'+q.n+'</td><td class="n">'+num(q.v)+'</td><td class="n '+(q.mean<0?'dn':'')+'">'+pct(q.mean)+'</td><td class="n '+(q.med<0?'dn':'')+'">'+pct(q.med)+'</td></tr>').join('')}}
+  if(showNav){
+    $('#ruleTxt').innerHTML='<b>仓位规则（渐进式 · 穿越触发）</b>：信号变量'+(o.s.dir==='high'?'上穿买入线':'下穿买入线')+'那一天 → <b>加仓 '+pct(o.cfg.step,0)+'</b>（上限 '+pct(o.cfg.cap,0)+'）；加完不再加，直到离开后重新穿越才再加一档。'+(o.s.dir==='high'?'下穿卖出线':'上穿卖出线')+'那一天 → <b>减仓 '+pct(o.cfg.step,0)+'</b>（下限/底仓 '+pct(o.cfg.floor,0)+'）。按穿越次数触发，买卖次数不必相等。T-1 信号 → T+1 开盘成交，双边成本 '+pct(o.cfg.cost,2)+'。';
+    const k=(v,l,c)=>'<div class="met"><div class="v '+(c||'')+'">'+v+'</div><div class="k">'+l+'</div></div>';
+    $('#navKpi').innerHTML=k(pct(m.ann),'策略年化收益',m.ann<0?'dn':'')+k(pct(m.bh),'买入持有年化',m.bh<0?'dn':'')+k(pct(m.ex),'超额年化',m.ex<0?'dn':'up')+k(pct(m.mdd),'最大回撤',m.mdd<-0.0001?'dn':'')+
+      k(num(m.sharpe,2),'夏普（rf='+pct(o.cfg.rf,0)+'）')+k(num(m.calmar,2),'Calmar')+k(m.trades,'交易次数')+k(pct(m.win,1),'持仓日胜率');
+    $('#sigName').textContent=o.s.name;$('#sigKind').textContent=o.s.kind==='pct'?'分位':'原始值';
+    $('#trSum').textContent='交易记录（前 50 笔，共 '+e.trades.length+' 笔）';
+    $('#trTable').innerHTML=e.trades.length?'<tr><th>成交日（T+1 开盘）</th><th>信号日</th><th>动作</th><th>仓位</th><th>成交价</th><th>信号变量</th></tr>'+e.trades.slice(0,50).map(x=>'<tr><td>'+x.date+'</td><td>'+x.sigDate+'</td><td class="'+(x.act==='加仓'?'up':'dn')+'">'+x.act+'</td><td>'+pct(x.from,0)+' → '+pct(x.to,0)+'</td><td>'+fmtV(x.price)+'</td><td>'+num(x.sv)+'</td></tr>').join(''):'<tr><td class="empty">区间内没有触发任何穿越。试着放宽阈值或缩短回看窗口。</td></tr>'}
+  $('#segPanel').hidden=!o.seg;
+  if(o.seg)$('#segTable').innerHTML='<tr><th>区间</th><th>日期</th><th>IC</th><th>p</th><th>策略年化</th><th>买入持有年化</th><th>最大回撤</th><th>夏普</th></tr>'+o.seg.map(x=>x.na?'<tr><td>'+x.nm+'</td><td colspan="7">区间太短</td></tr>':'<tr><td><b>'+x.nm+'</b></td><td class="n">'+x.a+' ~ '+x.b+'</td><td class="n">'+(x.ic?num(x.ic.ic):'–')+'</td><td class="n">'+(x.ic?num(x.ic.p):'–')+'</td><td class="n">'+pct(x.m.ann)+'</td><td class="n">'+pct(x.m.bh)+'</td><td class="n dn">'+pct(x.m.mdd)+'</td><td class="n">'+num(x.m.sharpe,2)+'</td></tr>').join('');
+  drawCharts();
+}
+
+/* ---------- 图表（手绘 SVG + 悬停） ---------- */
+function niceTicks(lo,hi,cnt){if(!(hi>lo)){hi=lo+1;lo-=1}const span=hi-lo,step0=span/cnt,mag=Math.pow(10,Math.floor(Math.log10(step0))),f=step0/mag;const step=(f<1.5?1:f<3?2:f<7?5:10)*mag;
+  const a=Math.floor(lo/step)*step,b=Math.ceil(hi/step)*step,out=[];for(let v=a;v<=b+step/2;v+=step)out.push(+v.toFixed(10));return out}
+function lineChart(el,o){
+  const W=Math.max(300,el.clientWidth||700),H=o.h,ml=46,mr=o.endLabels?98:14,mt=10,mb=24,pw=W-ml-mr,ph=H-mt-mb,n=o.dates.length;
+  let lo=Infinity,hi=-Infinity;o.series.forEach(s=>s.v.forEach(v=>{if(fin(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}}));(o.hlines||[]).forEach(h=>{lo=Math.min(lo,h.y);hi=Math.max(hi,h.y)});
+  if(!fin(lo)){el.innerHTML='<div class="empty">没有可画的数据</div>';return}
+  const pad=(hi-lo)*0.06||0.5;const ticks=niceTicks(lo-pad,hi+pad,4);const y0=ticks[0],y1=ticks[ticks.length-1];
+  const X=i=>ml+(n<2?0:i/(n-1)*pw),Y=v=>mt+ph-(v-y0)/(y1-y0)*ph;
+  let g='';ticks.forEach(t=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(ml-6)+'" y="'+(Y(t)+3.5)+'" text-anchor="end">'+o.yfmt(t)+'</text>'});
+  const yrs=[];for(let i=0;i<n;i++)if(i===0||o.dates[i].slice(0,4)!==o.dates[i-1].slice(0,4))yrs.push(i);
+  const every=pw/Math.max(1,yrs.length)<44?2:1;yrs.forEach((i,j)=>{if(j%every)return;g+='<line x1="'+X(i)+'" x2="'+X(i)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph+4)+'" stroke="var(--line2)"/><text x="'+X(i)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':'middle')+'">'+o.dates[i].slice(0,4)+'</text>'});
+  g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph)+'" stroke="var(--line2)"/>';
+  (o.hlines||[]).forEach(h=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(h.y)+'" y2="'+Y(h.y)+'" stroke="'+h.c+'" stroke-width="1.2" stroke-dasharray="5 4"/><text class="lab" x="'+(ml+pw-4)+'" y="'+(Y(h.y)-4)+'" text-anchor="end" style="fill:'+h.c+'">'+h.l+'</text>'});
+  o.series.forEach(s=>{let d='',pen=false;s.v.forEach((v,i)=>{if(fin(v)){d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pen=true}else pen=false});
+    g+='<path d="'+d+'" fill="none" stroke="'+s.c+'" stroke-width="'+(s.w||1.6)+'" stroke-linejoin="round"'+(s.dash?' stroke-dasharray="5 3"':'')+'/>'});
+  (o.marks||[]).forEach(mk=>{const x=X(mk.i),y=Y(mk.y);if(!fin(y))return;const up=mk.t>0,sz=5;
+    g+=up?'<path d="M'+x+' '+(y+4)+'l'+sz+' '+(sz*1.7)+'h'+(-2*sz)+'z" fill="var(--green)" stroke="var(--card)" stroke-width="1.5"/>':'<path d="M'+x+' '+(y-4)+'l'+sz+' '+(-sz*1.7)+'h'+(-2*sz)+'z" fill="var(--red)" stroke="var(--card)" stroke-width="1.5"/>'});
+  if(o.endLabels){const ls=o.series.map(s=>{let i=n-1;while(i>0&&!fin(s.v[i]))i--;return{y:Y(s.v[i]),t:s.name+' '+o.yfmt(s.v[i],1),c:s.c}}).sort((a,b)=>a.y-b.y);
+    for(let i=1;i<ls.length;i++)if(ls[i].y-ls[i-1].y<13)ls[i].y=ls[i-1].y+13;ls.forEach(l=>{g+='<text class="lab" x="'+(ml+pw+6)+'" y="'+(l.y+4)+'" style="fill:var(--tx2)"><tspan style="fill:'+l.c+'">●</tspan> '+esc(l.t)+'</text>'})}
+  g+='<line class="xh" x1="0" x2="0" y1="'+mt+'" y2="'+(mt+ph)+'" stroke="var(--tx3)" stroke-width="1" visibility="hidden"/><g class="dots"></g><rect x="'+ml+'" y="'+mt+'" width="'+pw+'" height="'+ph+'" fill="transparent" class="hit"/>';
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" aria-label="'+esc(o.aria)+'">'+g+'</svg><div class="tip" hidden></div>';
+  const svg=el.querySelector('svg'),xh=svg.querySelector('.xh'),dots=svg.querySelector('.dots'),tip=el.querySelector('.tip');
+  const move=ev=>{const r=svg.getBoundingClientRect(),sx=(ev.clientX-r.left)*W/r.width;let i=Math.round((sx-ml)/pw*(n-1));i=Math.max(0,Math.min(n-1,i));
+    xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('visibility','visible');
+    dots.innerHTML=o.series.map(s=>fin(s.v[i])?'<circle cx="'+X(i)+'" cy="'+Y(s.v[i])+'" r="4" fill="'+s.c+'" stroke="var(--card)" stroke-width="2"/>':'').join('');
+    tip.innerHTML='<div style="color:var(--tx3)">'+o.dates[i]+'</div>'+o.series.map(s=>'<div><i style="background:'+s.c+'"></i>'+s.name+' <b>'+o.yfmt(s.v[i],1)+'</b></div>').join('')+(o.extra?o.extra(i):'');
+    tip.hidden=false;const px=X(i)*r.width/W,tw=tip.offsetWidth;tip.style.left=Math.min(Math.max(0,px+12+tw>r.width?px-tw-12:px+12),r.width-tw)+'px';tip.style.top='6px'};
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerdown',move);
+  svg.addEventListener('pointerleave',()=>{xh.setAttribute('visibility','hidden');dots.innerHTML='';tip.hidden=true});
+}
+function barChart(el,q){
+  const W=Math.max(300,el.clientWidth||700),H=220,ml=46,mr=10,mt=16,mb=34,pw=W-ml-mr,ph=H-mt-mb;
+  let lo=0,hi=0;q.forEach(x=>{lo=Math.min(lo,x.mean,x.med);hi=Math.max(hi,x.mean,x.med)});const ticks=niceTicks(lo,hi,4),y0=ticks[0],y1=ticks[ticks.length-1];
+  const Y=v=>mt+ph-(v-y0)/(y1-y0)*ph,bw=pw/5;let g='';
+  ticks.forEach(t=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="'+(t===0?'var(--line2)':'var(--line)')+'"/><text x="'+(ml-6)+'" y="'+(Y(t)+3.5)+'" text-anchor="end">'+(t*100).toFixed(Math.abs(y1-y0)<0.05?1:0)+'%</text>'});
+  q.forEach((x,i)=>{const cx=ml+bw*i+bw/2,w=Math.min(56,bw*0.56),top=Math.min(Y(x.mean),Y(0)),h=Math.max(1,Math.abs(Y(x.mean)-Y(0))),neg=x.mean<0;
+    g+='<g class="bar" data-i="'+i+'"><rect x="'+(cx-bw/2)+'" y="'+mt+'" width="'+bw+'" height="'+ph+'" fill="transparent"/><path d="'+barPath(cx-w/2,top,w,h,neg)+'" fill="'+(neg?'var(--red)':'var(--s1)')+'" opacity=".9"/>'+
+      '<line x1="'+(cx-w/2-4)+'" x2="'+(cx+w/2+4)+'" y1="'+Y(x.med)+'" y2="'+Y(x.med)+'" stroke="var(--tx)" stroke-width="2.5" stroke-linecap="round"/>'+
+      '<text x="'+cx+'" y="'+(neg?top+h+13:top-5)+'" text-anchor="middle" style="fill:var(--tx2)">'+pct(x.mean)+'</text>'+
+      '<text class="lab" x="'+cx+'" y="'+(H-16)+'" text-anchor="middle" style="fill:var(--tx);font-weight:600">'+x.g+'</text><text x="'+cx+'" y="'+(H-3)+'" text-anchor="middle">n='+x.n+'</text></g>'});
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" aria-label="Q1 到 Q5 分档前瞻收益">'+g+'</svg><div class="tip" hidden></div>';
+  const svg=el.querySelector('svg'),tip=el.querySelector('.tip');
+  svg.querySelectorAll('.bar').forEach(b=>{const show=ev=>{const x=q[+b.dataset.i],r=svg.getBoundingClientRect();
+    tip.innerHTML='<div><b>'+x.g+'</b>（信号变量由低到高第 '+(+b.dataset.i+1)+' 档）</div><div>样本 <b>'+x.n+'</b> · 变量均值 <b>'+num(x.v)+'</b></div><div><i style="background:var(--s1)"></i>收益均值 <b>'+pct(x.mean)+'</b></div><div><i style="background:var(--tx)"></i>收益中位数 <b>'+pct(x.med)+'</b></div>';
+    tip.hidden=false;const px=(ml+bw*(+b.dataset.i)+bw/2)*r.width/W,tw=tip.offsetWidth;tip.style.left=Math.max(0,Math.min(px-tw/2,r.width-tw))+'px';tip.style.top='0px'};
+    b.addEventListener('pointerenter',show);b.addEventListener('pointerdown',show);b.addEventListener('pointerleave',()=>tip.hidden=true)});
+}
+function barPath(x,y,w,h,neg){const r=Math.min(4,h,w/2);return neg?'M'+x+' '+y+'h'+w+'v'+(h-r)+'q0 '+r+' '+(-r)+' '+r+'h'+(-(w-2*r))+'q'+(-r)+' 0 '+(-r)+' '+(-r)+'z':'M'+x+' '+(y+h)+'v'+(-(h-r))+'q0 '+(-r)+' '+r+' '+(-r)+'h'+(w-2*r)+'q'+r+' 0 '+r+' '+r+'v'+(h-r)+'z'}
+function drawCharts(){
+  const o=RES;if(!o||o.err||$('#l2').offsetParent===null)return;const e=o.eng,ds=o.c.dates.slice(o.i0,o.i1+1);
+  if(o.cfg.mode!=='nav'&&o.ic)barChart($('#icChart'),o.ic.q);
+  if(o.cfg.mode==='ic')return;
+  const marks=e.trades.map(t=>({i:t.k,y:e.nav[t.k],t:t.act==='加仓'?1:-1}));
+  lineChart($('#navChart'),{h:300,dates:ds,endLabels:true,aria:'策略净值、买入持有与沪深300净值曲线',yfmt:(v,d)=>fin(v)?v.toFixed(d?3:2):'–',
+    series:[{name:'策略',c:'var(--s1)',v:e.nav,w:2},{name:'买入持有',c:'var(--s2)',v:e.bh},{name:'沪深300',c:'var(--s3)',v:e.bm,dash:true}],marks,
+    extra:i=>'<div style="color:var(--tx3)">仓位 <b style="color:var(--tx)">'+pct(e.pos[i],0)+'</b></div>'});
+  const all=[...e.nav,...e.bh,...e.bm].filter(fin);$('#navCap').textContent='净值区间：'+Math.min(...all).toFixed(2)+' ~ '+Math.max(...all).toFixed(2)+'（初始 = 1.00）';
+  const sv=o.sg.trig.slice(o.i0,o.i1+1),isP=o.s.kind==='pct';
+  const smarks=e.trades.map(t=>({i:t.k-2,y:o.sg.trig[t.t-2],t:t.act==='加仓'?1:-1})).filter(m=>m.i>=0);
+  const vf=(v,d)=>fin(v)?(isP?(v*100).toFixed(d?1:0)+'%':Math.abs(v)<0.01&&v!==0?v.toExponential(2):v.toFixed(Math.abs(v)>=10?1:3)):'–';
+  lineChart($('#sigChart'),{h:190,dates:ds,aria:'信号变量走势与买卖阈值',yfmt:vf,series:[{name:o.s.name,c:'var(--tx2)',v:sv,w:1.4}],marks:smarks,
+    hlines:[{y:o.p.buy,c:'var(--green)',l:'买入 '+vf(o.p.buy,1)},{y:o.p.sell,c:'var(--red)',l:'卖出 '+vf(o.p.sell,1)}]});
+  const fv=sv.filter(fin);$('#sigCap').textContent='纵轴 = 信号'+(isP?'分位':'原始值')+'：区间 '+(fv.length?vf(Math.min(...fv),1)+' ~ '+vf(Math.max(...fv),1):'无有效值');
+}
+
+/* ---------- 页面切换 ---------- */
+function lgo(i){$$('.tabs[data-m="b"] .tab').forEach((t,j)=>t.classList.toggle('on',i===j));$$('.lpage').forEach((p,j)=>p.classList.toggle('on',i===j));window.scrollTo(0,0);if(i===2)drawCharts()}
+window.lgo=lgo;
+function setMode(m){$('#modeA').hidden=m!=='a';$('#modeB').hidden=m!=='b';$$('.tabs[data-m]').forEach(t=>t.hidden=t.dataset.m!==m);$$('.mode').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  try{localStorage.setItem('mode',m)}catch(e){}if(m==='b')drawCharts();window.scrollTo(0,0)}
+window.setMode=setMode;
+
+/* ---------- 启动 ---------- */
+makeSample();buildCfg();renderVerify();
+RES=run(readCfg(),2);renderResult();
+$('#vTable').addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b)showPreview(b.dataset.pv)});
+$('#verifyBtn').addEventListener('click',()=>{verified=true;updateRunBtn();lgo(1)});
+$('#runBtn').addEventListener('click',()=>{RES=run(readCfg(),cur);lgo(2);renderResult()});
+$('#cStart').addEventListener('change',updateRunBtn);
+const inp=$('#csvIn'),drop=$('#drop');
+async function load(files){const ok=[],bad=[];for(const f of files){if(!SPEC[f.name]){bad.push(f.name);continue}try{FILES[f.name]=parseCSV(f.name,await f.text());ok.push(f.name)}catch(err){bad.push(f.name)}}
+  verified=false;const m=$('#loadMsg');m.hidden=false;m.innerHTML='已载入 '+ok.length+' 份'+(bad.length?'；无法识别：'+bad.map(esc).join('、')+'（文件名需与 data_cache 一致）':'')+'。数据已变化，请重新核验。';
+  PARAMS[15].buy=PARAMS[15].sell=null;renderVerify();renderSig();RES=run(readCfg(),cur);renderResult()}
+inp.addEventListener('change',()=>{load(inp.files);inp.value=''});
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>load(e.dataTransfer.files));
+$$('.mode').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(drawCharts,150)});
+let m0='a';try{m0=localStorage.getItem('mode')||'a'}catch(e){}if(location.hash==='#lab')m0='b';if(m0==='b')setMode('b');
+})();
+</script>
+</body>
+</html>

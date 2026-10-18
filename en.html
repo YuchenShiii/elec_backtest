@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Power Drawdown Strategy Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&display=swap">
+<style>
+
+:root{--tx:#29261b;--tx2:#5e5a4e;--tx3:#8f8a7c;--line:#e8e4d8;--line2:#ddd8ca;
+  --bg:#faf9f5;--bg2:#f3f1ea;--card:#fffefb;--ac:#c2613f;--acbg:#f8ede6;--acln:#ecd2c4;
+  --warn:#9a6a1f;--warnbg:#f8f3e6;--warnln:#e8dcbc;--warntx:#6f5420;--warnbar:#d4a54a;--hlbg:#fbf8ef;
+  --red:#b8443a;--redbg:#f8ebe8;--redln:#ecd0cb;--green:#4d7a4a;--greenbg:#ecf2e8;--orange:#b9782a;--orangebg:#f7eedf;
+  --topbg:rgba(250,249,245,.96);
+  --serif:"Noto Serif SC","Songti SC",Georgia,serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.hr2{display:flex;align-items:center;gap:10px}.lang{font-size:13px;color:var(--tx2);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--card)}.lang:hover{color:var(--ac);border-color:var(--acln)}
+body{background:var(--bg);color:var(--tx);font-size:14px;line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--topbg)}
+.wrap,.top .inner{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{padding-bottom:60px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--topbg);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:16px}
+.top h1{font-family:var(--serif);font-size:18px;font-weight:600;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.top h1 small{font-size:12px;font-weight:500;color:var(--tx3)}
+.tabs{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;font-size:14px;color:var(--tx3);padding:9px 14px;transition:.15s;font-weight:500;white-space:nowrap}
+.tab:hover{color:var(--tx2)}
+.tab.on{color:var(--ac);border-bottom-color:var(--ac);font-weight:650}
+.tab:focus-visible,.fstep:focus-visible,.flip:focus-visible,.pill:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.page{display:none;padding-top:26px}.page.on{display:block}
+h2{font-family:var(--serif);font-size:23px;font-weight:600;letter-spacing:.01em;margin:4px 0 6px;text-wrap:balance}
+.lead{color:var(--tx2);font-size:14px;margin-bottom:20px;max-width:68ch}
+h3{font-size:15px;font-weight:650;margin:28px 0 10px;padding-left:10px;border-left:3px solid var(--ac);text-wrap:balance}
+h3.g{border-color:var(--green)}h3.r{border-color:var(--red)}h3.o{border-color:var(--orange)}
+h3 .sub{font-weight:400;font-size:12.5px;color:var(--tx3)}
+p{color:var(--tx2);margin:6px 0}
+b{color:var(--tx)}
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin:12px 0;color:var(--tx2)}
+.box.hl{background:var(--hlbg);border-color:var(--warnln)}
+.box ol{padding-left:1.3em;display:grid;gap:4px}
+.tw{overflow-x:auto;margin:11px 0;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.3px;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--bg2);color:var(--tx3);font-weight:600;white-space:nowrap}
+td.n{font-family:var(--mono);font-size:12.8px;white-space:nowrap}
+.up{color:var(--green)}.dn{color:var(--red)}
+.pill{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap;border:0;font-family:inherit}
+.pill[data-why]{cursor:pointer;border-bottom:1px dotted currentColor;border-radius:20px 20px 6px 6px}
+.pB{background:var(--greenbg);color:var(--green)}.pA{background:var(--redbg);color:var(--red)}.pC{background:var(--orangebg);color:var(--orange)}
+tr.why td{background:var(--bg2);color:var(--tx2);font-size:12.5px;line-height:1.8}
+.warn{background:var(--warnbg);border:1px solid var(--warnln);border-left:3px solid var(--warnbar);padding:11px 15px;border-radius:0 8px 8px 0;margin:12px 0;font-size:13px;color:var(--warntx)}
+.warn b{color:inherit}
+.eg{background:var(--card);border:1px solid var(--acln);border-radius:10px;padding:15px 18px;margin:14px 0}
+.eg.bad{background:var(--redbg);border-color:var(--redln)}
+.eg .t{font-weight:650;color:var(--green);font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.eg.bad .t{color:var(--red)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex-shrink:0}.eg.bad .dot{background:var(--red)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair>*{min-width:0;margin:0}
+.kpis{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 16px;display:flex;flex-direction:column}
+.kpi .n{font-size:19px;font-weight:700;color:var(--green);font-family:var(--mono);line-height:1.4}
+.kpi .l{font-size:11px;color:var(--tx3)}
+.tl{margin:14px 0}
+.tli{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.tli .d{flex-shrink:0;width:74px;font-weight:650;color:var(--ac);font-size:12.5px;font-family:var(--mono)}
+.tli .c{flex:1;min-width:0}.tli .c b{font-size:13.5px}.tli .c p{margin:2px 0;font-size:12.8px}
+.funnel{margin:16px 0 4px;display:flex;flex-direction:column;gap:7px}
+.fstep{margin:0 auto;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;font-family:inherit;color:inherit;text-align:left;font-size:inherit}
+.fstep:hover{border-color:var(--acln);background:var(--acbg)}
+.fstep .tag{font-size:11px;font-weight:650;color:var(--ac);background:var(--card);border:1px solid var(--acln);border-radius:4px;padding:2px 8px;white-space:nowrap}
+.fstep .ft{font-weight:650;font-size:14px;white-space:nowrap}
+.fstep .fd{color:var(--tx3);font-size:12.5px;margin-left:auto;text-align:right}
+.fstep .chev{color:var(--tx3);font-size:11px;margin-left:4px;transition:.2s}
+.fstep.open .chev{transform:rotate(90deg)}
+.fw1{width:100%}.fw2{width:88%}.fw3{width:76%}.fw4{width:64%}
+.fdetail{background:var(--card);border:1px solid var(--acln);border-radius:9px;padding:14px 18px;margin:0 auto;font-size:13.3px;color:var(--tx2)}
+.fhint{text-align:center;color:var(--tx3);font-size:12px;margin:10px 0 4px}
+.who{display:inline-block;font-size:10.5px;font-weight:650;padding:1px 7px;border-radius:4px;background:var(--acbg);color:var(--ac)}
+.flipgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.flip{perspective:1200px;height:190px;cursor:pointer;background:none;border:0;padding:0;font-family:inherit;color:inherit;text-align:left}
+.flipin{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flip.on .flipin{transform:rotateY(180deg)}
+.flipf,.flipb{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:11px;padding:16px 18px;border:1px solid var(--line);overflow:auto}
+.flipf{background:var(--bg2);display:flex;flex-direction:column}
+.flipb{background:var(--card);transform:rotateY(180deg);border-color:var(--acln)}
+.flipf .st{font-family:var(--serif);font-size:19px;font-weight:600}.flipf .sp{font-size:12px;color:var(--tx3);font-family:var(--mono);margin:2px 0 10px}
+.flipf .stat{font-size:14px;font-weight:650;color:var(--green)}.flipf .stat.wait{color:var(--orange)}
+.flipf .hint{font-size:11px;color:var(--tx3);margin-top:auto}
+.flipb .r{font-size:12.3px;padding:4px 0;border-bottom:1px dashed var(--line);color:var(--tx2)}
+.bars{display:grid;gap:10px;margin:14px 0;padding:16px 18px;border:1px solid var(--line);border-radius:10px}
+.bars .row{display:grid;grid-template-columns:7.5em 1fr;gap:12px;align-items:center}
+.bars .nm{font-size:12.5px;color:var(--tx2)}
+.bars .tr{position:relative;height:34px}
+.bars .ax{position:absolute;top:-2px;bottom:-2px;left:25%;border-left:1px solid var(--line2)}
+.bars .b{position:absolute;height:13px;border-radius:2px;display:flex;align-items:center}
+.bars .b span{position:absolute;font-size:11px;font-family:var(--mono);color:var(--tx2);white-space:nowrap}
+.bars .mean{top:2px;background:var(--acln)}.bars .med{top:19px;background:var(--ac)}.bars .med.neg{background:var(--red)}
+.legend{display:flex;gap:16px;font-size:11.5px;color:var(--tx3)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+@media (max-width:720px){.flipgrid,.pair{grid-template-columns:1fr}.fw1,.fw2,.fw3,.fw4{width:100%}.fstep{flex-wrap:wrap}.fstep .fd{margin-left:0;text-align:left;flex-basis:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+
+:root{--s1:#2766ad;--s2:#d07a35;--s3:#7b5fb0}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.modes{display:flex;gap:3px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.mode{border:0;background:none;font:inherit;font-size:13px;color:var(--tx2);padding:5px 12px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.mode.on{background:var(--card);color:var(--tx);box-shadow:0 1px 2px rgba(41,38,27,.1);font-weight:600}
+.mode:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.tab .no{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--bg2);color:var(--tx3);font-size:11px;margin-right:6px;font-family:var(--mono)}
+.tab.on .no{background:var(--ac);color:#fff}
+.badge{font-size:10.5px;font-weight:650;padding:1px 6px;border-radius:4px;background:var(--warnbg);color:var(--warn);border:1px solid var(--warnln);margin-left:6px}
+.lpage{display:none;padding-top:22px}.lpage.on{display:block}
+.dhead{color:var(--tx2);font-size:13.5px}
+.dhead b{font-family:var(--mono);font-weight:600;color:var(--tx)}
+.mockb{display:inline-block;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.06em;padding:1px 8px;border-radius:4px;background:var(--redbg);color:var(--red);border:1px solid var(--redln)}
+code{font-family:var(--mono);font-size:.92em;background:var(--bg2);padding:0 4px;border-radius:4px}
+.drop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1.5px dashed var(--line2);border-radius:10px;padding:12px 16px;margin:12px 0;font-size:13px;color:var(--tx2);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--ac);background:var(--acbg)}
+.loadmsg{font-size:13px;color:var(--tx2);margin:-4px 0 10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-align:center}
+.stat .v{font-size:26px;font-weight:600;font-family:var(--mono);line-height:1.3}
+.stat .k{font-size:12px;color:var(--tx3)}
+.v.g{color:var(--green)}.v.o{color:var(--orange)}.v.r{color:var(--red)}
+.vt td{vertical-align:middle}
+.vt tr.w td{background:var(--warnbg)}.vt tr.e td{background:var(--redbg)}
+.lnk{background:none;border:0;font:inherit;font-family:var(--mono);font-size:12.8px;color:var(--ac);cursor:pointer;padding:0;text-align:left}
+.lnk:hover{text-decoration:underline}
+.lnk.sm{font-family:inherit;font-size:12px}
+tr.pv>td{background:var(--bg2);padding:12px}
+.pvt{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+.pvt table{font-size:12px;margin:0}.pvt th{position:sticky;top:0}
+.pvt td{font-family:var(--mono);white-space:nowrap}
+.pvt tr.gap td{text-align:center;color:var(--tx3);font-family:inherit}
+.center{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px 0 6px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 22px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{filter:brightness(.94)}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:var(--card);color:var(--tx);border:1px solid var(--line2)}
+.btn.sm{padding:5px 12px;font-size:13px}
+.btn:focus-visible,.si:focus-visible,.lnk:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.cfg{display:grid;grid-template-columns:232px minmax(0,1fr);gap:16px;align-items:start}
+.siglist{border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--card);position:sticky;top:calc(env(safe-area-inset-top,0px) + 112px);max-height:calc(100vh - 130px);overflow:auto}
+.sg h5{font-size:11.5px;color:var(--tx3);letter-spacing:.08em;margin:10px 8px 3px;font-weight:600}
+.si{display:flex;gap:8px;align-items:center;width:100%;border:0;background:none;font:inherit;font-size:13px;color:var(--tx);padding:6px 8px;border-radius:7px;cursor:pointer;text-align:left}
+.si:hover{background:var(--bg2)}
+.si .no{font-family:var(--mono);font-size:11px;color:var(--tx3);width:18px;text-align:right;flex-shrink:0}
+.si.on{background:var(--acbg);color:var(--ac);font-weight:600}.si.on .no{color:var(--ac)}
+.si:disabled{color:var(--tx3);cursor:not-allowed;background:none}
+.si .off{margin-left:auto;font-size:10.5px;padding:0 6px;border-radius:4px;background:var(--bg2);color:var(--tx3);white-space:nowrap}
+.si .off.x{background:var(--redbg);color:var(--red)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 12px}
+.panel h4{font-size:14.5px;font-weight:650;margin-bottom:12px}
+.panel h4 small{font-weight:400;color:var(--tx3);font-size:12px}
+.h4b{margin-top:22px}
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px 14px}
+.fld{min-width:0}
+.fld label{display:block;font-size:12.5px;color:var(--tx2);margin-bottom:4px;font-weight:500}
+.fld label small{color:var(--tx3);font-weight:400}
+.fld input,.fld select{width:100%;font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line2);border-radius:7px;background:var(--bg);color:var(--tx);font-variant-numeric:tabular-nums}
+.fld input:focus,.fld select:focus{outline:2px solid var(--acln);border-color:var(--ac)}
+.fld select:disabled{color:var(--tx3)}
+.sigdesc{border-left:3px solid var(--line2);padding:4px 12px;margin:0 0 14px;color:var(--tx2);font-size:13px}
+.sigmeta{font-size:12px;color:var(--tx3);margin:-8px 0 12px}
+.ck label{font-size:13.5px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.ck input{accent-color:var(--ac);width:15px;height:15px}
+.hintp{font-size:12px;color:var(--tx3);margin:6px 0 0}
+.rhead h3{margin-top:4px}
+.rhead .sub{font-size:13px;color:var(--tx3);font-family:var(--mono)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{font-size:12.5px;padding:3px 10px;border-radius:6px;background:var(--bg2);color:var(--tx2)}
+.chip.g{background:var(--greenbg);color:var(--green)}.chip.r{background:var(--redbg);color:var(--red)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px}
+.met{background:var(--bg2);border-radius:9px;padding:9px 12px;min-width:0}
+.met .v{font-size:19px;font-weight:600;font-family:var(--mono);line-height:1.4}
+.met .k{font-size:11.5px;color:var(--tx3)}
+.met .v.up{color:var(--green)}.met .v.dn{color:var(--red)}
+.rule{font-size:12.8px;color:var(--tx2);background:var(--acbg);border-left:3px solid var(--ac);border-radius:0 8px 8px 0;padding:9px 14px;margin:0 0 14px}
+.legend{flex-wrap:wrap;gap:6px 16px;margin:2px 0 6px}
+.legend .tick{width:12px;height:3px;background:var(--tx);border-radius:1px;vertical-align:3px}
+.legend .dash{width:16px;height:0;border-top:2px dashed var(--s3);border-radius:0;vertical-align:3px;background:none}
+.tri{font-size:10px;margin-right:4px}.tri.up{color:var(--green)}.tri.dn{color:var(--red)}
+.chart{position:relative;margin:4px 0;touch-action:pan-y}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--mono);font-size:10.5px;fill:var(--tx3)}
+.chart .lab{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-size:11px}
+.tip{position:absolute;top:0;pointer-events:none;background:var(--card);border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:12px;line-height:1.6;box-shadow:0 6px 18px rgba(41,38,27,.12);white-space:nowrap;font-variant-numeric:tabular-nums;z-index:3}
+.tip b{font-family:var(--mono)}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.cap{font-size:11.5px;color:var(--tx3);text-align:right}
+.trades{margin-top:14px}
+.trades summary{cursor:pointer;font-size:13px;color:var(--tx2)}
+.trades table td{font-family:var(--mono);font-size:12px}
+.empty{padding:28px;text-align:center;color:var(--tx3);font-size:13px}
+@media (max-width:820px){.cfg{grid-template-columns:1fr}.siglist{position:static;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:0 6px}.sg{min-width:0}.metrics{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="inner">
+  <div class="hrow">
+    <h1>Power Sector Drawdown Strategy<small>Thermal / Hydro · Data to 2026-08-24 · All results in-sample</small></h1>
+    <div class="hr2">
+      <div class="modes" role="group" aria-label="Switch module"><button class="mode on" data-m="a">① Research</button><button class="mode" data-m="b">② Backtest Lab</button></div>
+      <a class="lang" href="./" hreflang="zh" lang="zh">中文</a>
+    </div>
+  </div>
+  <div class="tabs" role="tablist" data-m="a">
+    <button class="tab on" role="tab" onclick="go(0)">Policy</button>
+    <button class="tab" role="tab" onclick="go(1)">Thermal Funnel</button>
+    <button class="tab" role="tab" onclick="go(2)">Hydro Funnel</button>
+    <button class="tab" role="tab" onclick="go(3)">Factor Log</button>
+  </div>
+  <div class="tabs" role="tablist" data-m="b" hidden>
+    <button class="tab on" role="tab" onclick="lgo(0)"><span class="no">1</span>Data Check<span class="badge">HITL</span></button>
+    <button class="tab" role="tab" onclick="lgo(1)"><span class="no">2</span>Signal Setup</button>
+    <button class="tab" role="tab" onclick="lgo(2)"><span class="no">3</span>Results</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+<div id="modeA">
+
+<!-- ========== Page 1: Policy ========== -->
+<div class="page on" id="p0">
+  <h2>Policy Background: why thermal power became a "dividend stock"</h2>
+  <div class="lead">The macro premise behind the whole strategy: policy turned thermal power from a cyclical stock into a dividend / utility stock. This decides how drawdowns are later classified as A or B.</div>
+
+  <h3>Core thesis: three constraints on thermal power</h3>
+  <div class="box">
+    <b>Costs are capped</b>: long-term contract coal price kept in a 570–770 RMB/t "green band" (NDRC Doc. 303) → fewer coal-price shocks<br>
+    <b>Tariffs are boxed in</b>: market reform allows ±20% floating (NDRC Doc. 1439) → tariffs can rise or fall, but elasticity is limited<br>
+    <b>Market share is squeezed</b>: wind and solar get grid priority and installations keep beating plans → thermal generation space shrinks permanently<br>
+    <b>→ Conclusion</b>: thermal power moved from "a cyclical stock earning the coal-to-power spread" to "a dividend stock living on stable cash flow and payouts"
+  </div>
+
+  <h3>Policy timeline (benchmark for factor checks)</h3>
+  <div class="tl" id="timeline"></div>
+
+  <h3>Three Five-Year Plans: the last two beat their targets <span class="sub">(tap a card for target vs. actual)</span></h3>
+  <div class="flipgrid" id="plans"></div>
+  <div class="warn">The 13th and 14th Five-Year Plans both beat their targets → the 15th plan's "coal power becomes a supporting, flexible source" is credible enough to use as the base case.</div>
+
+  <h3 class="o">From policy to factor choices (directional hypotheses)</h3>
+  <div class="tw"><table id="qushe"></table></div>
+  <div class="warn">These are hypotheses extrapolated from policy: down-weight coal-price factors (capped), repurpose tariff and renewables-squeeze factors as an "A-permanent detector", and favour dividend / cash-flow factors.</div>
+</div>
+
+<!-- ========== Page 2: Thermal funnel ========== -->
+<div class="page" id="p1">
+  <h2>Thermal Funnel: a big drop ≠ a wrong drop</h2>
+  <div class="lead">Built step by step from real events: both are deep drawdowns, so how do you tell a <b>mispricing</b> (should rebound) from a <b>value trap</b> (deserved to fall)?</div>
+
+  <h3>Start with two real events (where the funnel begins)</h3>
+  <div class="pair">
+    <div class="eg">
+      <div class="t"><span class="dot"></span>Case 1: Huaneng, Oct 2022, −16.4% relative</div>
+      <p><b>On the surface</b>: the policy backdrop looked poor and the stock fell hard. It looked "deserved".</p>
+      <p><b>The actual data</b>: tariffs <b>+18%</b> (power shortage), coal flat, a dry hydro year meant less squeeze → <b>fundamentals were fine!</b></p>
+      <p><b>Verdict</b>: <span class="pill pB">Type B · Mispriced</span> → wrong drop, should rebound → t+60 <b class="up">+7.3%</b> ✅ recovered</p>
+    </div>
+    <div class="eg bad">
+      <div class="t"><span class="dot"></span>Case 2: Huaneng, Jul 2024, −17.8% relative</div>
+      <p><b>On the surface</b>: the stock got cheap and looked like a bargain.</p>
+      <p><b>The actual data</b>: tariffs <b>−2.85%</b> (falling) + heavy renewables squeeze + a wet hydro year (+10.5%) taking more share → <b>fundamentals really got worse!</b></p>
+      <p><b>Verdict</b>: <span class="pill pA">Type A · Permanent</span> → value genuinely reset lower, stay away → t+60 <b class="dn">−10.7%</b> ❌ kept falling (trap)</p>
+    </div>
+  </div>
+  <div class="box"><b>What the two cases teach</b>: the size of the drop alone tells you nothing. You have to check fundamentals (coal, tariffs, renewables, hydro) to judge whether the drop was deserved. That is the A/B attribution.</div>
+
+  <h3>The 4-layer funnel built from these cases <span class="sub">(tap to expand)</span></h3>
+  <div class="funnel">
+    <button class="fstep fw1" onclick="ft(this)"><span class="tag">Layer 1</span><span class="ft">Timing</span><span class="fd">Did the sector crash? → 7 events</span><span class="chev">▶</span></button>
+    <div class="fdetail fw1" hidden><b>Screen</b>: the thermal index's 60-day excess return vs. CSI 300 falls to or below its historical 5th percentile (threshold −16%) → trigger.<br><b>Why</b>: excess vs. CSI 300 removes market-wide sell-offs; a historical percentile adapts on its own instead of a hand-picked threshold. <b>Price only, no factors → avoids circular reasoning.</b><br><b>Result</b>: 7 events in 10 years.</div>
+    <button class="fstep fw2" onclick="ft(this)"><span class="tag">Layer 2</span><span class="ft">Find cheap</span><span class="fd">Which stocks are cheap?</span><span class="chev">▶</span></button>
+    <div class="fdetail fw2" hidden><b>Inputs</b>: high dividend yield, high FCF yield, low P/B: names that fell into value.<br><b>Frequency</b>: annual financials ÷ daily price → a daily ratio signal.<br><b>No look-ahead</b>: financials are lagged to their announcement date (an annual report is only public in April of the next year).</div>
+    <button class="fstep fw3" onclick="ft(this)"><span class="tag">Layer 3</span><span class="ft">De-risk</span><span class="fd">Mispriced or trap? (A/B attribution)</span><span class="chev">▶</span></button>
+    <div class="fdetail fw3" hidden><b>Apply the A/B attribution from the two cases</b>:<br>· <span class="pill pA">Type A · Permanent</span> falling tariffs / renewables squeeze (e.g. 2024) → value truly lower → <b>drop it (trap)</b><br>· <span class="pill pC">Type A · Cyclical</span> coal-price shock (e.g. 2020) → mean-reverts → check where the cycle is<br>· <span class="pill pB">Type B · Mispriced</span> fundamentals intact (e.g. 2022, tariffs +18%) → <b>keep it (real opportunity)</b><br><b>Why it matters</b>: "buy what's cheap" in layer 2 walks into traps, because a permanently worse stock keeps getting "cheaper". This layer removes them.</div>
+    <button class="fstep fw4" onclick="ft(this)"><span class="tag">Layer 4</span><span class="ft">Pick the best</span><span class="fd">Top 5 on cash flow + resilience</span><span class="chev">▶</span></button>
+    <div class="fdetail fw4" hidden><b>Score</b>: composite = zscore(FCF yield) + zscore(prior resilience); hold the top 5 equal-weight for 60 days.<br><b>Why these two</b>: they ranked best in the backtest (high-FCF mean +6.2%, prior resilience had the highest RankIC).<br><b>⚠ But the medians are weak</b> (see "mean vs. median" below).</div>
+  </div>
+  <div class="fhint">Each layer narrows the list down to the final picks</div>
+
+  <h3>Attribution of the 7 drawdown events <span class="sub">(tap a label for the A-factor breakdown)</span></h3>
+  <div class="tw"><table>
+    <tr><th>Event</th><th>Excess</th><th>Key data</th><th>Attribution</th><th>t+60</th></tr>
+    <tr><td class="n">2017-08→11</td><td class="n dn">−17.4%</td><td>Before tariff reform, coal falling</td><td><button class="pill pB" data-why="A1 coal −12.6% (falling, positive) / A9-10 tariff: benchmark stable (pre-reform) / A11 utilisation hours +1.1% / A12 demand +6.5% strong / A13 renewables squeeze: early, light / A14 hydro: neutral → no fundamental negative found, classified Type B mispriced">B Mispriced</button></td><td class="n dn">−15.8%</td></tr>
+    <tr><td class="n">2018-12→19-04</td><td class="n dn">−17.5%</td><td>Tariff +2.72%, coal flat</td><td><button class="pill pB" data-why="A1 coal −1.0% (flat) / A9-10 tariff +2.72% (Huaneng, up) / A11 utilisation hours +3.6% (up) / A12 demand +5.9% strong / A13 renewables light / A14 hydro neutral → fundamentals improving yet price fell = mispriced">B Mispriced</button></td><td class="n dn">−4.3%</td></tr>
+    <tr><td class="n">2020-04→07</td><td class="n dn">−16.9%</td><td>COVID sell-off</td><td><button class="pill pB" data-why="A1 coal −4.3% (flat) / A9-10 tariff: benchmark stable / A11 utilisation hours −1.8% (COVID) / A12 demand −0.7% (COVID) / A13 renewables medium / A14 hydro neutral → short-term COVID shock, not structural = mispriced">B Mispriced</button></td><td class="n up">+0.4%</td></tr>
+    <tr><td class="n">2020-10→21-01</td><td class="n dn">−17.3%</td><td>Coal +31% shock</td><td><button class="pill pC" data-why="A1 coal +31.3% (❌ main driver, cost shock) / A9-10 tariff +4.41% (up) / A11 utilisation hours +5.5% (shortage, more dispatch) / A12 demand neutral / A13 renewables medium / A14 hydro neutral → tariffs and volume fine, only coal spiked = Type A cyclical (mean-reverts)">A Cyclical</button></td><td class="n up">+23.9%</td></tr>
+    <tr><td class="n">2022-10→23-01</td><td class="n dn">−16.4%</td><td>Tariff +18%, coal flat</td><td><button class="pill pB" data-why="A1 coal +4.4% (flat) / A9-10 tariff ≈ +18% (shortage, sharp rise) / A11 utilisation hours −1.6% (flat) / A12 demand neutral / A13 renewables heavy / A14 hydro dry (less squeeze, positive) → tariffs up sharply, fundamentals intact yet price fell = mispriced (re-classified using actual tariffs)">B Mispriced</button></td><td class="n up">+7.3%</td></tr>
+    <tr><td class="n">2024-07→09</td><td class="n dn">−17.8%</td><td>Tariff −2.85% + renewables + hydro squeeze</td><td><button class="pill pA" data-why="A1 coal −2.9% (flat) / A9-10 tariff −2.85% (❌ falling) / A11 utilisation hours −1.7% (❌ down) / A12 demand +8.0% (strong) / A13 renewables squeeze ❌ heavy / A14 hydro +10.5% wet year ❌ strong squeeze → three structural negatives = Type A permanent (value trap)">A Permanent</button></td><td class="n dn">−10.7%</td></tr>
+    <tr><td class="n">2026-03→06</td><td class="n dn">−16.8%</td><td>Tariff −3.5%, falling</td><td><button class="pill pA" data-why="A1 coal +10.0% (slightly up) / A9-10 tariff −3.5% (❌ falling) / A11 utilisation hours down (2025 national −312h) / A12 demand +5.3% (strong) / A13 renewables squeeze ❌ heavy / A14 hydro: inflows easing, less squeeze → tariffs still falling + renewables squeeze = Type A permanent">A Permanent</button></td><td class="n">n/a</td></tr>
+  </table></div>
+
+  <h3 class="r">The hardest finding: pure thermal power does not recover</h3>
+  <div class="box">
+    Average t+60 excess vs. CSI 300 after the 7 drawdowns = <b>+0.14%</b> (≈ 0)<br>
+    Compare a mixed utilities index (incl. hydro / nuclear / dividend names): <b>+6.8%</b><br>
+    <b>→ The market's belief that "buying power stocks on the dip works" is really driven by the hydro, nuclear and dividend names inside the index. Pure thermal does not recover.</b>
+  </div>
+
+  <h3>Stock selection: good means, collapsing medians</h3>
+  <div class="tw"><table>
+    <tr><th>Factor</th><th>Mean excess</th><th>Median</th><th>What it really means</th></tr>
+    <tr><td>High FCF</td><td class="n">+6.2%</td><td class="n">+1.8%</td><td>Driven by a few big winners</td></tr>
+    <tr><td>FCF + resilience</td><td class="n">+7.6%</td><td class="n">+0.9%</td><td>The shine wears off</td></tr>
+    <tr><td>Prior resilience</td><td class="n">+5.2%</td><td class="n dn">−2.1%</td><td>Negative median! Carried by outliers</td></tr>
+    <tr><td>Low volatility</td><td class="n">+0.5%</td><td class="n">+0.7%</td><td>The only one that is consistent</td></tr>
+  </table></div>
+  <div class="bars" id="mvm" aria-label="Mean vs. median comparison"></div>
+  <div class="warn">Lesson: with small samples, the mean is badly inflated by outliers (e.g. Huayin Power +228% in 2020). The median is the part that reliably repeats, and thermal stock-picking alpha is actually weak.</div>
+
+  <h3>Thermal conclusions</h3>
+  <div class="box hl"><ol>
+    <li>Pure thermal drawdowns <b>do not recover</b> (+0.14%); simply buying the dip is hard to profit from</li>
+    <li>Thermal returns come from <b>selection</b>, not timing, but the factors are weak (median only +1.8%)</li>
+    <li>The value of A/B attribution is <b>risk removal</b>: avoiding value traps like 2024</li>
+    <li>Honest limits: 7 events, directional conclusions, not statistical proof</li>
+  </ol></div>
+</div>
+
+<!-- ========== Page 3: Hydro funnel ========== -->
+<div class="page" id="p2">
+  <h2>Hydro Funnel: swap "coal price" for "water inflow"</h2>
+  <div class="lead">Hydro has no fuel cost; its "fuel" is water inflow. Same A/B framework: falling in a wet year = mispriced, falling in a dry year = a real drop.</div>
+
+  <h3>Start with two real events</h3>
+  <div class="pair">
+    <div class="eg">
+      <div class="t"><span class="dot"></span>Case 1: hydro drawdown, Oct 2024</div>
+      <p><b>Check inflow</b>: 2024 was <b>wet</b> (national hydro output +10.5%) → good fundamentals yet falling = <b>mispriced</b></p>
+      <p><b>Verdict</b>: <span class="pill pB">Type B · Mispriced</span> → t+60 <b class="up">+5.0%</b> ✅ recovered</p>
+    </div>
+    <div class="eg bad">
+      <div class="t"><span class="dot"></span>Case 2: hydro drawdown, Jul 2025</div>
+      <p><b>Check inflow</b>: Q3 2025 was <b>dry, −8%</b>, quarterly output down 10–17% → genuinely weak = <b>real drop</b></p>
+      <p><b>Verdict</b>: <span class="pill pC">Type A · Cyclical</span> → t+60 <b class="dn">−13.8%</b> ❌ no recovery (buying in a dry year = trap)</p>
+    </div>
+  </div>
+  <div class="box"><b>The core rule for hydro</b>: whether a hydro drawdown is buyable depends on whether it happens in a <b>wet or dry</b> period. Wet-year drop = mispriced (buy); dry-year drop = real (avoid). This is the thermal A/B framework with "coal" replaced by "water".</div>
+
+  <h3>Hydro funnel <span class="sub">(tap to expand)</span></h3>
+  <div class="funnel">
+    <button class="fstep fw1" onclick="ft(this)"><span class="tag">Layer 1</span><span class="ft">Timing</span><span class="fd">Did hydro crash? → 6 events</span><span class="chev">▶</span></button>
+    <div class="fdetail fw1" hidden>An equal-weight index of 11 pure hydro names; 60-day excess vs. CSI 300 ≤ historical 5th percentile (threshold −14.4%) → trigger. 6 events since 2018.</div>
+    <button class="fstep fw2" onclick="ft(this)"><span class="tag">Layer 2</span><span class="ft">Check inflow</span><span class="fd">Wet or dry (hydro's "coal price")</span><span class="chev">▶</span></button>
+    <div class="fdetail fw2" hidden><b>Hydro has no coal; its fuel is water.</b> Check the year's inflow / hydro output YoY: more water = more output = positive; dry = negative.</div>
+    <button class="fstep fw3" onclick="ft(this)"><span class="tag">Layer 3</span><span class="ft">De-risk</span><span class="fd">Mispriced or trap (wet vs. dry)</span><span class="chev">▶</span></button>
+    <div class="fdetail fw3" hidden>· <span class="pill pB">Type B · Mispriced</span> falling in a wet year (e.g. 2024, +10.5%) → good fundamentals → <b>recovers (buy)</b><br>· <span class="pill pC">Type A · Cyclical</span> falling in a dry year (e.g. Q3 2025, −8%) → genuinely weak → <b>no recovery (avoid)</b><br>The −13.8% loss in 2025 was exactly the "buy the dip in a dry year" trap.</div>
+    <button class="fstep fw4" onclick="ft(this)"><span class="tag">Layer 4</span><span class="ft">Pick the name</span><span class="fd">Hydro is homogeneous → pick the leader</span><span class="chev">▶</span></button>
+    <div class="fdetail fw4" hidden><b>Hydro names are homogeneous</b> (all stable cash flow + high payouts) → stock selection doesn't work. Time the entry and pick the leader: of 6 hydro names tested, only <b>Yangtze Power</b> had a genuinely significant drawdown signal (+5.3%, p=0.03).</div>
+  </div>
+
+  <h3>6 hydro drawdowns · inflow attribution <span class="sub">(tap a label for inflow details)</span></h3>
+  <div class="tw"><table>
+    <tr><th>Event</th><th>t+60 recovery</th><th>Inflow at the time</th><th>Attribution</th></tr>
+    <tr><td class="n">2020-04→07</td><td class="n up">+0.7%</td><td>Dry H1, wet from June</td><td><button class="pill pB" data-why="Inflow: dry first half (Yangtze Power Q2 output −8.9%), but the main flood season came early in June and Jul–Sep set rainfall records → scared by dry spell, flood season refilled immediately = mispriced">B Mispriced</button></td></tr>
+    <tr><td class="n">2021-01</td><td class="n up">+20.0%</td><td>Slightly dry, valuation rebound</td><td><button class="pill pC" data-why="Inflow: 2021 hydro output −2.2%, utilisation −199h (slightly dry), but a sharp +20% rebound after the valuation sell-off → mild dry year + valuation repair">Mildly dry</button></td></tr>
+    <tr><td class="n">2023-01</td><td class="n up">+1.9%</td><td>Severe drought, H1 −22.9%</td><td><button class="pill pC" data-why="Inflow: low reservoir storage in early 2023 + persistently low rainfall; H1 large-scale hydro output −22.9%, full year −5.6% → confirmed dry year = Type A cyclical">A Cyclical</button></td></tr>
+    <tr><td class="n">2024-10</td><td class="n up">+5.0%</td><td>Wet (+10.5%)</td><td><button class="pill pB" data-why="Inflow: 2024 national hydro output +10.5% YoY (wet year), utilisation +216h → fundamentals clearly better yet a deep drop = mispriced">B Mispriced</button></td></tr>
+    <tr><td class="n">2025-07</td><td class="n dn">−13.8%</td><td>Dry Q3, −8%</td><td><button class="pill pC" data-why="Inflow: Wudongde 6.04% below normal in the first three quarters of 2025, Three Gorges dry; Jul–Sep Yangtze basin inflow −8% vs. average, quarterly output −10–17%, net profit −9.16% → a real dry-year drop, buying failed">A Cyclical</button></td></tr>
+    <tr><td class="n">2026-06</td><td>&lt; 60 days</td><td>Pending</td><td>—</td></tr>
+  </table></div>
+  <div class="warn">Average hydro recovery after a drawdown is +2.75% (better than pure thermal's +0.14%), but unstable: lifted by the +20% in 2021, and a big −13.8% loss in the 2025 dry year.</div>
+
+  <h3 class="g">The strongest finding: Yangtze Power drawdown signal (the only statistically significant one)</h3>
+  <div class="box hl">
+    On Yangtze Power, "buy the drawdown" (excess vs. its own history ≤ 5th percentile):
+    <div class="kpis">
+      <span class="kpi"><span class="n">+5.2%</span><span class="l">t+60 mean excess</span></span>
+      <span class="kpi"><span class="n">83%</span><span class="l">Hit rate</span></span>
+      <span class="kpi"><span class="n">0.03</span><span class="l">p-value (significant)</span></span>
+      <span class="kpi"><span class="n">+5.2%</span><span class="l">Median = mean</span></span>
+    </div>
+    <b>The highest-quality result in the study</b>: statistically significant, median equals mean (not outlier-driven), and it has a logic (market leader + reservoir cascade regulation, so a drawdown is almost always a mispricing).
+  </div>
+
+  <h3 class="r">But to be honest: Yangtze is special, it doesn't generalise</h3>
+  <div class="tw"><table>
+    <tr><th>Hydro stock</th><th>Drawdown excess</th><th>Median</th><th>Hit rate</th><th>p-value</th></tr>
+    <tr><td><b>Yangtze Power</b></td><td class="n up">+5.3%</td><td class="n">+5.2%</td><td class="n">83%</td><td class="n"><b>0.03</b> ✅</td></tr>
+    <tr><td>Guiguan Electric</td><td class="n">+5.3%</td><td class="n">+2.3%</td><td class="n">71%</td><td class="n">0.18</td></tr>
+    <tr><td>SDIC Energy</td><td class="n">+0.3%</td><td class="n">+0.1%</td><td class="n">50%</td><td class="n">0.93</td></tr>
+    <tr><td>Qianyuan Power</td><td class="n">+0.1%</td><td class="n dn">−3.1%</td><td class="n">29%</td><td class="n">0.99</td></tr>
+    <tr><td>Huaneng Hydro</td><td class="n dn">−3.9%</td><td class="n dn">−3.8%</td><td class="n">50%</td><td class="n">0.29</td></tr>
+    <tr><td>Three Gorges Water</td><td class="n dn">−1.2%</td><td class="n dn">−3.4%</td><td class="n">45%</td><td class="n">0.67</td></tr>
+  </table></div>
+  <div class="warn">Of 6 hydro leaders, only Yangtze truly works. Its reservoir cascade and leadership mean a drawdown is almost always a mispricing; for ordinary hydro names a drawdown may reflect a real drought and won't recover. <b>Don't say "hydro can be bought on dips"; say "Yangtze can be bought on dips, because it is special".</b></div>
+
+  <h3>Thermal vs. hydro side by side</h3>
+  <div class="tw"><table>
+    <tr><th>Dimension</th><th>Thermal</th><th>Hydro</th></tr>
+    <tr><td>Drawdown recovery</td><td>+0.14% (none)</td><td>+2.75% (some, unstable)</td></tr>
+    <tr><td>Main cost driver</td><td>Coal price (daily)</td><td>Water inflow (seasonal)</td></tr>
+    <tr><td>Stock selection</td><td class="up">✅ Works (wide dispersion)</td><td class="dn">❌ Doesn't (homogeneous)</td></tr>
+    <tr><td>Best approach</td><td>Selection (FCF + resilience)</td><td>Timing (pick a leader like Yangtze)</td></tr>
+    <tr><td>A/B attribution core</td><td>Coal / tariffs</td><td>Wet vs. dry</td></tr>
+  </table></div>
+
+  <h3>Hydro conclusions</h3>
+  <div class="box hl"><ol>
+    <li>For hydro drawdowns, check <b>water inflow</b>: wet-year drop = mispriced (buy), dry-year drop = real (avoid)</li>
+    <li>Hydro is <b>homogeneous</b> → selection doesn't work; time the entry (pick the leader)</li>
+    <li><b>Yangtze Power</b> is the only statistically significant name (+5.3%, p=0.03), but it is special and doesn't generalise to all hydro</li>
+    <li>The A/B framework carries across sectors: thermal's "coal" = hydro's "water"</li>
+  </ol></div>
+</div>
+
+<!-- ========== Page 4: Factor log ========== -->
+<div class="page" id="p3">
+  <h2>Factor Log: what was tested and how it did</h2>
+  <div class="lead">Every factor and signal I tested: definition, results and limits, with mean vs. median differences stated honestly.</div>
+
+  <h3>1. Timing signals (single stock · buy on drawdown, hold 60 days)</h3>
+  <div class="tw"><table>
+    <tr><th>Signal</th><th>Stock</th><th>t+60 excess</th><th>Hit rate</th><th>p-value</th></tr>
+    <tr><td rowspan="4">Drawdown percentile<br>(excess vs. CSI 300 ≤ 5th pct)</td><td>Yangtze Power (hydro)</td><td class="n up"><b>+5.2%</b></td><td class="n">83%</td><td class="n"><b>0.03</b> ✅</td></tr>
+    <tr><td>China Shenhua (coal + power)</td><td class="n up">+4.9%</td><td class="n">83%</td><td class="n">0.21</td></tr>
+    <tr><td>Huaneng Power (thermal)</td><td class="n">+1.3%</td><td class="n">33%</td><td class="n">0.77</td></tr>
+    <tr><td>CNNP (nuclear)</td><td class="n">+0.6%</td><td class="n">50%</td><td class="n">0.86</td></tr>
+  </table></div>
+  <div class="warn">Conclusion: as a single timing signal, only <b>Yangtze Power is significant</b> (p=0.03, median = mean, not outlier-driven). Pure thermal timing doesn't work, consistent with "thermal drawdowns don't recover".</div>
+
+  <h3>2. Cross-sectional selection factors (29 thermal names · top 5 after a drawdown vs. equal weight)</h3>
+  <div class="tw"><table>
+    <tr><th>Factor</th><th>Mean excess</th><th>Median</th><th>Hit rate</th><th>Assessment</th></tr>
+    <tr><td>FCF + resilience</td><td class="n">+7.6%</td><td class="n">+0.9%</td><td class="n">83%</td><td>Highest mean, median collapses</td></tr>
+    <tr><td>High FCF</td><td class="n">+6.2%</td><td class="n">+1.8%</td><td class="n">83%</td><td>Relatively the most stable</td></tr>
+    <tr><td>Prior resilience</td><td class="n">+5.2%</td><td class="n dn">−2.1%</td><td class="n">67%</td><td>Negative median · outlier-driven</td></tr>
+    <tr><td>Low volatility</td><td class="n">+0.5%</td><td class="n">+0.7%</td><td class="n">67%</td><td>The only consistent one</td></tr>
+  </table></div>
+  <div class="warn">Conclusion: <b>every selection factor has a weak median</b> (the best, high FCF, is only +1.8%); means are held up by a few doubling stocks. Thermal selection alpha is limited overall, a consequence of the sector itself (drawdowns don't recover).</div>
+
+  <h3>3. Combination test (does 1 + 1 &gt; 2?)</h3>
+  <div class="tw"><table>
+    <tr><th>Combination</th><th>Mean excess</th><th>Conclusion</th></tr>
+    <tr><td>High FCF alone</td><td class="n">+6.2%</td><td>—</td></tr>
+    <tr><td>Prior resilience alone</td><td class="n">+5.2%</td><td>—</td></tr>
+    <tr><td><b>FCF + resilience</b></td><td class="n up"><b>+7.6%</b></td><td>✅ Two good factors together, 1 + 1 &gt; 2</td></tr>
+    <tr><td>+ low volatility (3 factors)</td><td class="n dn">−0.1%</td><td>❌ A weak factor drags the combo down</td></tr>
+    <tr><td>All 4 factors</td><td class="n dn">−0.9%</td><td>❌ More factors is not better</td></tr>
+  </table></div>
+  <div class="box">Key insight: only combine factors that are each strong on their own (FCF + resilience). Adding one weak factor (low volatility) ruins the whole combination.</div>
+
+  <h3>4. Attribution (A/B framework, for diagnosis, not a return factor)</h3>
+  <div class="tw"><table>
+    <tr><th>Sector</th><th>Attribution inputs</th><th>Events</th><th>Use</th></tr>
+    <tr><td>Thermal</td><td>Coal / tariffs / utilisation hours / demand / renewables / hydro squeeze</td><td class="n">7</td><td>Classify B mispriced / A cyclical / A permanent</td></tr>
+    <tr><td>Hydro</td><td>Wet vs. dry (hydro's "coal price")</td><td class="n">6</td><td>Wet-year drop = mispriced / dry-year drop = real</td></tr>
+  </table></div>
+  <div class="box hl"><b>The strongest result</b>: Yangtze Power drawdown signal +5.2%, p=0.03, median = mean. All other factors are weak. The core value of the research is in <b>diagnosis (A/B risk removal, disproving dip-buying)</b>, not in finding strong alpha.</div>
+</div>
+
+</div><!--modeA-->
+
+<div id="modeB" hidden>
+
+<!-- ========== Lab 1: Data check ========== -->
+<div class="lpage on" id="l0">
+  <div class="dhead">
+    <div>Today: <b id="today">—</b> · Data through: <b id="lastDate">—</b> (last completed trading day)<span class="mockb" id="mockBadge" hidden>MOCK · sample data</span></div>
+    <p>Before running a backtest, check each CSV's row count, date range, magnitudes and any abnormal jumps. When everything looks right, use the button at the bottom to unlock signal setup.</p>
+  </div>
+  <div class="warn" id="mockNote" hidden>This is <b>synthetic sample data</b> for demonstrating the workflow and charts. It is not real market data, and the numbers on the charts are not research findings. Drop the CSVs from <code>backend/app/data_cache/</code> into the box below (keep the file names) to switch to real data. Everything is computed locally in your browser; nothing is uploaded.</div>
+  <label class="drop" id="drop" for="csvIn">
+    <span class="dropt"><b>Load real data</b>: choose or drop the CSVs from data_cache (multiple allowed)</span>
+    <span class="btn ghost sm">Choose files</span>
+    <input type="file" id="csvIn" accept=".csv,text/csv" multiple hidden>
+  </label>
+  <div class="loadmsg" id="loadMsg" hidden></div>
+  <div class="stats" id="vStats"></div>
+  <div class="tw"><table class="vt" id="vTable"></table></div>
+  <div class="center"><button class="btn" id="verifyBtn">Data checked, go to signal setup →</button></div>
+</div>
+
+<!-- ========== Lab 2: Signal setup ========== -->
+<div class="lpage" id="l1">
+  <div class="cfg">
+    <nav class="siglist" id="sigList" aria-label="Signal library"></nav>
+    <div class="cfgr">
+      <div class="panel">
+        <h4>Global settings</h4>
+        <div class="form">
+          <div class="fld"><label for="cStock">Stock</label><select id="cStock"></select></div>
+          <div class="fld"><label for="cMode">Test type</label><select id="cMode"><option value="both">Quintile IC + NAV backtest</option><option value="ic">Quintile forward-return IC</option><option value="nav">Dual-threshold NAV backtest</option></select></div>
+          <div class="fld"><label for="cN">IC forward window</label><select id="cN"></select></div>
+          <div class="fld"><label for="cIcv">IC variable basis <small>P0 unified</small></label><select id="cIcv"><option value="pct">Percentile (detrended, conservative)</option><option value="raw">Raw value (picks up rate trend)</option></select></div>
+          <div class="fld"><label for="cStep">Add/trim size <small>per trigger</small></label><input id="cStep" type="number" step="0.05" min="0.05" max="1" value="0.3"></div>
+          <div class="fld"><label for="cFloor">Base position <small>kept when flat</small></label><input id="cFloor" type="number" step="0.1" min="0" max="1" value="0"></div>
+          <div class="fld"><label for="cCap">Position cap</label><input id="cCap" type="number" step="0.1" min="0.1" max="1" value="1"></div>
+          <div class="fld"><label for="cStart">Start date</label><input id="cStart" type="date" value="2018-01-02"></div>
+          <div class="fld"><label for="cEnd">End date</label><input id="cEnd" type="date" value="2026-08-24"></div>
+          <div class="fld"><label for="cCost">Round-trip cost <small>buy + sell</small></label><input id="cCost" type="number" step="0.0005" min="0" value="0.0015"></div>
+          <div class="fld"><label for="cRf">Risk-free rate (annual)</label><input id="cRf" type="number" step="0.005" min="0" value="0.02"></div>
+          <div class="fld"><label for="cExec">Execution price</label><select id="cExec" disabled><option>Next-day open (no look-ahead)</option></select></div>
+        </div>
+      </div>
+      <div class="panel" id="sigPanel"></div>
+      <div class="panel ck">
+        <label><input type="checkbox" id="c924"> <b>924 split comparison</b> (full period / before 2024-09-24 / after)</label>
+        <p class="hintp">24 Sep 2024 was a market turning point: before it, rates fell steadily and stocks naturally lagged bonds, which can make factors look broken; after it, the market regime changed and needs to be assessed separately.</p>
+      </div>
+      <div class="center"><button class="btn" id="runBtn">▶ Run backtest</button><div class="hintp" id="runHint"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Lab 3: Results ========== -->
+<div class="lpage" id="l2">
+  <div id="resHead"></div>
+  <div class="panel" id="icPanel">
+    <h4>Quintile forward-return IC test</h4>
+    <div class="metrics m4" id="icKpi"></div>
+    <div class="legend" id="icLeg"><span><i style="background:var(--s1)"></i>Mean forward return</span><span><i class="tick"></i>Median forward return</span></div>
+    <div class="chart" id="icChart"></div>
+    <div class="tw"><table id="icTable"></table></div>
+    <p class="hintp">IC = Spearman rank correlation between the signal variable and the next N-day return. &gt;0.1 is useful, &gt;0.15 is strong. Forward windows overlap, so p-values are optimistic and only indicative.</p>
+  </div>
+  <div class="panel" id="navPanel">
+    <h4>Dual-threshold NAV backtest</h4>
+    <div class="rule" id="ruleTxt"></div>
+    <div class="metrics" id="navKpi"></div>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Strategy NAV</span><span><i style="background:var(--s2)"></i>Buy &amp; hold (the stock)</span><span><i class="dash"></i>CSI 300 (market)</span><span><b class="tri up">▲</b>Add</span><span><b class="tri dn">▼</b>Trim</span></div>
+    <div class="chart" id="navChart"></div>
+    <div class="cap" id="navCap"></div>
+    <h4 class="h4b">Signal variable: <span id="sigName"></span> <span class="pill pB" id="sigKind"></span></h4>
+    <div class="cap">Time axis aligned with the NAV chart; dashed lines = buy/sell thresholds; triangles = triggers</div>
+    <div class="chart" id="sigChart"></div>
+    <div class="cap" id="sigCap"></div>
+    <details class="trades"><summary id="trSum">Trades</summary><div class="tw"><table id="trTable"></table></div></details>
+  </div>
+  <div class="panel" id="segPanel" hidden>
+    <h4>924 split comparison</h4>
+    <div class="tw"><table id="segTable"></table></div>
+  </div>
+</div>
+
+</div><!--modeB-->
+
+</div>
+
+<script>
+const D={
+ timeline:[{d:'2016',t:'13th FYP: capacity cuts',p:'Over-aggressive coal capacity cuts → coal jumped from 370 to 600+ RMB/t; the backdrop to the 2017 drawdown and what forced the long-term contract system'},
+  {d:'Late 2016',t:'Long-term coal contracts introduced',p:'Medium/long-term contracts to contain runaway coal prices; the origin of the later 570–770 green band'},
+  {d:'2021-10',t:'Tariff market reform (Doc. 1439)',p:'Coal-fired tariffs float ±20% → tariffs can rise or fall; A9/A10 tariff declines are policy-driven'},
+  {d:'2022-02',t:'Contract coal green band (Doc. 303)',p:'Contract coal is capped flat → only spot coal (A1) reflects true cost, which is why spot prices are used'},
+  {d:'2021–25',t:'14th FYP: renewables far ahead of plan',p:'Wind and solar get grid priority and exceed planned share → permanent squeeze on thermal generation (A13)'},
+  {d:'2026-08',t:'15th FYP: coal becomes a "flexible source"',p:'Coal power moves from primary source to supporting / flexible capacity; thermal becomes a dividend play with fewer coal-cycle opportunities'}],
+ plans:[
+  {n:'13th FYP',span:'2016–2020',status:'✅ Targets met',done:1,details:['Coal capacity cuts → ✅ beaten (mines → 4,700)','Non-fossil 15% of energy by 2020 → ✅ met','Non-fossil 39% of capacity → ✅ world #1 in renewables','Total capacity 2,000 GW → ✅ passed in 2019','Coal capacity under 1,100 GW → ✅ share below 50% (49.1%)']},
+  {n:'14th FYP',span:'2021–2025',status:'✅ Targets beaten',done:1,details:['Non-fossil 20% of consumption → ✅ beaten (+1 pt a year)','Non-fossil 39% of generation → ✅ met','Renewable capacity → ✅ far ahead (2,340 GW / 60%)','Energy intensity −13.5% → ✅ beaten (−16.1%)','Contract coal 570–770 → ✅ implemented','Coal plant upgrades → ✅ repositioned to backup + flexibility']},
+  {n:'15th FYP',span:'2026–2030',status:'⏳ In progress',done:0,details:['Non-fossil 25% by 2030 → ⏳ not yet due','Wind + solar 1,200 GW+ → ⚠️ already 1,400 GW in 2024 (early)','Coal becomes supporting / flexible source → ⏳ under way','New power system in place by 2030 → ⏳','Both previous plans beaten → this one is credible']}],
+ qushe:[['⬆ Prioritise','B1 dividend yield − bond yield spread','Core pricing anchor for dividend assets'],['⬆ Prioritise','Dividend yield + payout coverage','Dividend strength + guard against high-yield traps'],
+  ['⬆ Prioritise','Free cash flow factors','Latent dividends, possibly worth more than an existing high yield'],['⬇ Down-weight','A1–A8 coal price factors','Coal is capped → fewer shocks → background monitoring only'],
+  ['⬇ Repurpose','Tariff / renewables squeeze','Not for timing; used as an A-permanent detector'],['✕ Excluded','Pure technical oversold (RSI / Bollinger)','No causal chain, not significant in tests'],
+  ['✕ Excluded','Annual / monthly low-frequency factors','Too infrequent to work as trading signals']],
+ mvm:[['High FCF',6.2,1.8],['FCF+Resil.',7.6,0.9],['Resilience',5.2,-2.1],['Low vol.',0.5,0.7]]
+};
+document.getElementById('timeline').innerHTML=D.timeline.map(x=>'<div class="tli"><div class="d">'+x.d+'</div><div class="c"><b>'+x.t+'</b><p>'+x.p+'</p></div></div>').join('');
+document.getElementById('plans').innerHTML=D.plans.map(x=>'<button class="flip" aria-label="'+x.n+' target vs. actual"><div class="flipin"><div class="flipf"><div class="st">'+x.n+'</div><div class="sp">'+x.span+'</div><div class="stat'+(x.done?'':' wait')+'">'+x.status+'</div><div class="hint">Tap for target vs. actual →</div></div><div class="flipb">'+x.details.map(d=>'<div class="r">'+d+'</div>').join('')+'</div></div></button>').join('');
+document.querySelectorAll('.flip').forEach(f=>f.addEventListener('click',()=>f.classList.toggle('on')));
+document.getElementById('qushe').innerHTML='<tr><th>Choice</th><th>Factor</th><th>Rationale</th></tr>'+D.qushe.map(r=>{const c=r[0][0]==='⬆'?'up':r[0][0]==='✕'?'dn':'';return '<tr><td class="'+c+'" style="white-space:nowrap;font-weight:600">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'}).join('');
+(function(){const lo=-2.5,hi=7.5,pos=v=>(v-lo)/(hi-lo)*100,z=pos(0);
+ const bar=(v,cls)=>{const a=Math.min(pos(v),z),w=Math.abs(pos(v)-z);const lab=(v>0?'+':'−')+Math.abs(v).toFixed(1)+'%';
+  const lp=v>=0?'left:calc(100% + 6px)':'right:calc(100% + 6px)';
+  return '<div class="b '+cls+(v<0&&cls==='med'?' neg':'')+'" style="left:'+a+'%;width:'+w+'%"><span style="'+lp+'">'+lab+'</span></div>'};
+ document.getElementById('mvm').innerHTML='<div class="legend"><span><i style="background:var(--acln)"></i>Mean excess</span><span><i style="background:var(--ac)"></i>Median</span></div>'+
+  D.mvm.map(r=>'<div class="row"><div class="nm">'+r[0]+'</div><div class="tr"><div class="ax"></div>'+bar(r[1],'mean')+bar(r[2],'med')+'</div></div>').join('');})();
+document.querySelectorAll('.pill[data-why]').forEach(p=>{p.title=p.dataset.why;p.addEventListener('click',()=>{
+ const tr=p.closest('tr'),nx=tr.nextElementSibling;if(nx&&nx.classList.contains('why')){nx.remove();return}
+ const r=document.createElement('tr');r.className='why';r.innerHTML='<td colspan="'+tr.children.length+'"></td>';r.firstChild.textContent=p.dataset.why;tr.after(r)})});
+function ft(el){const d=el.nextElementSibling;el.classList.toggle('open');d.hidden=!d.hidden}
+function go(i){document.querySelectorAll('.tabs[data-m="a"] .tab').forEach((t,j)=>t.classList.toggle('on',i===j));
+ document.querySelectorAll('#modeA .page').forEach((p,j)=>p.classList.toggle('on',i===j));window.scrollTo(0,0);
+ try{localStorage.setItem('tab',i)}catch(e){}}
+try{const s=+localStorage.getItem('tab');if(s>0&&s<4)go(s)}catch(e){}
+</script>
+<script>
+
+(function(){
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const fin=Number.isFinite;
+const pct=(v,d=2)=>fin(v)?(v*100).toFixed(d)+'%':'–';
+const num=(v,d=4)=>fin(v)?v.toFixed(d):'–';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+
+const STOCKS=[['600900','Yangtze Power','Hydro'],['601985','CNNP','Nuclear'],['003816','CGN Power','Nuclear'],['600011','Huaneng Power','Thermal'],['601088','China Shenhua','Coal + power']];
+const IDX=[['801161.SWI','SW Power index'],['H30199.CSI','CSI Power index'],['000688.SH','STAR 50'],['H30184.CSI','CSI Semiconductor'],['000922.SH','CSI Dividend'],['000300.SH','CSI 300']];
+const STOCK_COLS=['date','open','close','dv_ttm','pb','pe','amount','turnover'];
+const SPEC={};
+STOCKS.forEach(s=>SPEC[s[0]+'.csv']={cols:STOCK_COLS,label:s[1]});
+IDX.forEach(s=>SPEC[s[0]+'.csv']={cols:['date','close'],label:s[1]});
+SPEC['国债10Y.csv']={cols:['date','yield'],label:'10-year China government bond yield'};
+SPEC['两市总成交额.csv']={cols:['date','total_amount'],label:'Shanghai + Shenzhen total turnover'};
+const ORDER=Object.keys(SPEC).sort();
+const FILES={};
+
+
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20260824);
+function gauss(){let u=0;while(!u)u=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*R())}
+const HOL=[['2018-02-15','2018-02-21'],['2019-02-04','2019-02-10'],['2020-01-24','2020-02-02'],['2021-02-11','2021-02-17'],['2022-01-31','2022-02-06'],['2023-01-21','2023-01-27'],['2024-02-10','2024-02-17'],['2025-01-28','2025-02-04'],['2026-02-15','2026-02-23']];
+function tradingDays(a,b){const o=[];const d=new Date(a+'T00:00:00Z'),e=new Date(b+'T00:00:00Z');
+  while(d<=e){const w=d.getUTCDay(),s=d.toISOString().slice(0,10),md=s.slice(5);
+    const hol=(md>='10-01'&&md<='10-07')||md==='01-01'||(md>='05-01'&&md<='05-03')||HOL.some(h=>s>=h[0]&&s<=h[1]);
+    if(w&&w<6&&!hol)o.push(s);d.setUTCDate(d.getUTCDate()+1)}return o}
+function makeSample(){
+  const D=tradingDays('2018-01-02','2026-08-24'),n=D.length;
+  const mk=D.map(()=>gauss()*0.0115);
+  const shocks=[['2018-10-10',45],['2020-03-20',40],['2022-09-01',40],['2024-06-01',45],['2026-02-20',50]];
+  const sec=D.map(()=>gauss()*0.006);
+  shocks.forEach(([s,len])=>{const i=D.findIndex(d=>d>=s);for(let k=0;k<len&&i+k<n;k++)sec[i+k]-=0.0042});
+  const yr=d=>+d.slice(0,4);
+  function path(s0,mu,vol,beta,sb,i0){const sig=vol/Math.sqrt(252),id=Math.sqrt(Math.max(sig*sig-beta*beta*0.0115*0.0115-sb*sb*0.006*0.006,1e-6));
+    const c=new Array(n).fill(NaN),o=new Array(n).fill(NaN);let lp=Math.log(s0);
+    for(let t=i0;t<n;t++){const r=mu/252-sig*sig/2+beta*mk[t]+sb*sec[t]+id*gauss();const prev=Math.exp(lp);lp+=r;c[t]=Math.exp(lp);
+      o[t]=t===i0?c[t]*(1-0.003*gauss()):prev*Math.exp(0.3*r+0.003*gauss())}
+    return{c,o}}
+  const out={};
+  const idxP={'801161.SWI':[2600,0.06,0.2,0.5,1],'H30199.CSI':[2200,0.06,0.21,0.5,1],'000688.SH':[1100,-0.01,0.34,1.1,0],'H30184.CSI':[3200,0.08,0.4,1.3,0],'000922.SH':[4400,0.07,0.17,0.6,0.3],'000300.SH':[4080,0.015,0.22,1,0]};
+  for(const k in idxP){const [s0,mu,vol,b,sb]=idxP[k];const i0=k==='000688.SH'?D.indexOf('2019-12-31'):0;const p=path(s0,mu,vol,b,sb,i0);
+    out[k+'.csv']={date:D.slice(i0),close:p.c.slice(i0)}}
+  const stP={'600900':[90,0.15,0.21,0.35,0.7,3.6,2.8,19,2.4e9],'601985':[11,0.08,0.3,0.7,0.6,2.0,2.1,22,1.2e9],'003816':[4,0.05,0.27,0.6,0.6,2.9,1.8,18,6e8],'600011':[10,0.03,0.34,0.6,1.2,3.4,1.2,25,9e8],'601088':[30,0.12,0.27,0.6,0.8,6.0,1.1,9,1.6e9]};
+  for(const k in stP){const [s0,mu,vol,b,sb,dv0,pb0,pe0,amt0]=stP[k];const i0=k==='003816'?D.indexOf('2019-08-26'):0;const p=path(s0,mu,vol,b,sb,i0);
+    const cols={date:[],open:[],close:[],dv_ttm:[],pb:[],pe:[],amount:[],turnover:[]};let ar=0;const shares=amt0/(s0*0.005);
+    const fac={};for(let y=2017;y<=2026;y++)fac[y]={d:Math.pow(1.07,y-2017)*Math.exp(0.06*gauss()),b:Math.pow(1.08,y-2017),e:Math.pow(1.06,y-2017)*Math.exp(0.1*gauss())};
+    for(let t=i0;t<n;t++){const d=D[t],y=yr(d),fy=d.slice(5)>='05-01'?y-1:y-2;const f=fac[Math.max(2017,fy)];
+      const r=t>i0?Math.log(p.c[t]/p.c[t-1]):0;ar=0.95*ar+0.31*gauss();
+      cols.date.push(d);cols.open.push(p.o[t]);cols.close.push(p.c[t]);
+      cols.dv_ttm.push(dv0*s0*f.d/p.c[t]);cols.pb.push(p.c[t]/(s0/pb0*f.b));cols.pe.push(p.c[t]/(s0/pe0*f.e));
+      const a=amt0*Math.exp(0.35*ar)*(1+18*Math.abs(r))*(p.c[t]/s0)**0.5;cols.amount.push(a);cols.turnover.push(a/(p.c[t]*shares)*100)}
+    out[k+'.csv']=cols}
+  const yi=D.indexOf('2026-08-20');let ou=0;const yd={date:[],yield:[]};
+  for(let t=0;t<=yi;t++){ou=0.985*ou+0.02*gauss();const tr=3.92-2.1*Math.min(1,t/(yi*0.92));yd.date.push(D[t]);yd.yield.push(Math.min(4.6,Math.max(1.6,tr+ou)))}
+  out['国债10Y.csv']=yd;
+  let a2=0;const ta={date:[],total_amount:[]};D.forEach((d,t)=>{a2=0.96*a2+0.07*gauss();ta.date.push(d);ta.total_amount.push(6.5e11*Math.exp(a2)*Math.pow(1.13,t/244))});
+  out['两市总成交额.csv']=ta;
+  for(const k in out){const cols=SPEC[k].cols;FILES[k]={cols,data:out[k],n:out[k].date.length,mock:true}}
+}
+
+
+function parseCSV(name,text){
+  let lines=text.replace(/^﻿/,'').split(/\r?\n/).filter(l=>l.trim()!=='');let mock=false;
+  while(lines.length&&lines[0].trim().startsWith('#')){if(/mock/i.test(lines[0]))mock=true;lines.shift()}
+  const head=lines.shift().split(',').map(s=>s.trim());const data={};head.forEach(h=>data[h]=[]);
+  for(const l of lines){const p=l.split(',');head.forEach((h,j)=>{const v=(p[j]||'').trim();data[h].push(h==='date'?v.slice(0,10):(v===''?NaN:parseFloat(v)))})}
+  return{cols:head,data,n:(data.date||[]).length,mock};
+}
+function validate(name){
+  const f=FILES[name],sp=SPEC[name];if(!f)return{st:'e',msg:'File missing'};
+  const miss=sp.cols.filter(c=>!f.cols.includes(c));if(miss.length)return{st:'e',msg:'Missing columns: '+miss.join(', ')};
+  const d=f.data.date;for(let i=1;i<d.length;i++)if(!(d[i]>d[i-1]))return{st:'e',msg:'Dates must be ascending with no duplicates (row '+(i+1)+')'};
+  if(f.mock)return{st:'w',msg:'Sample data (synthetic), not real market data',mock:true};
+  const v=f.data.close||f.data.yield||f.data.total_amount;let jumps=0,nan=0;
+  for(let i=0;i<v.length;i++){if(!fin(v[i]))nan++;else if(f.data.close&&i&&fin(v[i-1])&&Math.abs(v[i]/v[i-1]-1)>0.11)jumps++}
+  const notes=[];if(jumps)notes.push(jumps+' trading days moved more than ±11% (possible suspension or adjustment jump)');
+  if(f.data.open&&f.data.close){let bad=0;for(let i=0;i<f.n;i++){const r=f.data.close[i]/f.data.open[i];if(fin(r)&&(r<0.85||r>1.18))bad++}if(bad)notes.push(bad+' days with an abnormal close/open ratio (check that both use the same price adjustment)')}
+  if(nan)notes.push(nan+' empty values');
+  return{st:notes.length?'w':'p',msg:notes.join('; ')};
+}
+
+
+let verified=false,openPv=null;
+function renderVerify(){
+  let p=0,w=0,e=0,mock=0,last='';
+  const rows=ORDER.map(k=>{const v=validate(k),f=FILES[k];if(v.st==='p')p++;else if(v.st==='w')w++;else e++;if(v.mock)mock++;
+    if(f&&STOCKS.some(s=>s[0]+'.csv'===k)){const ld=f.data.date[f.n-1];if(ld>last)last=ld}
+    const pill=v.st==='p'?'<span class="pill pB">Pass</span>':v.st==='w'?'<span class="pill pC">'+(v.mock?'Sample':'Warning')+'</span>':'<span class="pill pA">Error</span>';
+    return '<tr class="'+(v.st==='p'?'':v.mock?'':v.st)+'" data-f="'+esc(k)+'"><td><button class="lnk" data-pv="'+esc(k)+'">'+esc(k)+'</button><div class="hintp" style="margin:0">'+esc(SPEC[k].label)+'</div></td><td class="n">'+(f?f.n:'–')+'</td><td class="n">'+(f?f.data.date[0]:'–')+'</td><td class="n">'+(f?f.data.date[f.n-1]:'–')+'</td><td>'+pill+'</td><td>'+esc(v.msg||'')+(f?' <button class="lnk sm" data-pv="'+esc(k)+'">Preview + column stats</button>':'')+'</td></tr>'}).join('');
+  $('#vTable').innerHTML='<tr><th>File</th><th>Rows</th><th>First</th><th>Last</th><th>Status</th><th>Notes</th></tr>'+rows;
+  $('#vStats').innerHTML=[['Files',ORDER.length,''],['Passed',p,'g'],['Warning / sample',w,'o'],['Errors',e,'r']].map(x=>'<div class="stat"><div class="v '+x[2]+'">'+x[1]+'</div><div class="k">'+x[0]+'</div></div>').join('');
+  $('#lastDate').textContent=last||'—';
+  const d=new Date();$('#today').textContent=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('#mockBadge').hidden=$('#mockNote').hidden=!mock;
+  $('#verifyBtn').disabled=e>0;$('#verifyBtn').textContent=e>0?e+' file(s) have errors; fix them to continue':'Data checked, go to signal setup →';
+  if(openPv)showPreview(openPv,true);
+  updateRunBtn();
+}
+function showPreview(k,keep){
+  $$('tr.pv').forEach(r=>r.remove());
+  if(!keep&&openPv===k){openPv=null;return}openPv=k;
+  const f=FILES[k];if(!f)return;const tr=$('#vTable tr[data-f="'+CSS.escape(k)+'"]');if(!tr)return;
+  const cols=f.cols;const stat=cols.filter(c=>c!=='date').map(c=>{const a=f.data[c].filter(fin);const mn=Math.min(...a),mx=Math.max(...a),av=a.reduce((s,x)=>s+x,0)/(a.length||1);
+    return '<tr><td>'+esc(c)+'</td><td>'+a.length+'</td><td>'+(f.n-a.length)+'</td><td>'+fmtV(mn)+'</td><td>'+fmtV(mx)+'</td><td>'+fmtV(av)+'</td></tr>'}).join('');
+  const row=i=>'<tr>'+cols.map(c=>'<td>'+(c==='date'?f.data[c][i]:fmtV(f.data[c][i]))+'</td>').join('')+'</tr>';
+  let body='';for(let i=0;i<Math.min(20,f.n);i++)body+=row(i);if(f.n>40)body+='<tr class="gap"><td colspan="'+cols.length+'">… '+(f.n-40)+' rows omitted …</td></tr>';for(let i=Math.max(20,f.n-20);i<f.n;i++)body+=row(i);
+  const r=document.createElement('tr');r.className='pv';
+  r.innerHTML='<td colspan="6"><div class="pvt" style="margin-bottom:10px"><table><tr><th>Column</th><th>Non-empty</th><th>Empty</th><th>Min</th><th>Max</th><th>Mean</th></tr>'+stat+'</table></div><div class="pvt"><table><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+body+'</table></div></td>';
+  tr.after(r);
+}
+function fmtV(v){if(!fin(v))return '';const a=Math.abs(v);return a>=1e9?(v/1e9).toFixed(2)+'bn':a>=1e4?v.toFixed(0):a>=100?v.toFixed(2):v.toFixed(4)}
+
+
+const SIG=[
+ {id:1,cat:'Valuation',name:'Dividend yield percentile',dir:'high',kind:'pct',p:{win:504,buy:0.7,sell:0.3},desc:'Percentile of the TTM dividend yield over the past N trading days. High percentile = cheap relative to its own history.'},
+ {id:2,cat:'Valuation',name:'Yield − bond spread percentile',dir:'high',kind:'pct',p:{win:504,buy:0.7,sell:0.3},desc:'Historical percentile of (dividend yield − 10Y government bond yield). A wide spread = attractive versus bonds. The main signal studied.'},
+ {id:3,cat:'Valuation',name:'P/B percentile',dir:'low',kind:'pct',p:{win:504,buy:0.3,sell:0.7},desc:'Historical percentile of price-to-book. Buy at a low percentile.'},
+ {id:4,cat:'Valuation',name:'DDM discount (monthly)',off:'Off'},
+ {id:5,cat:'Price',name:'RSI(12) oversold',dir:'low',kind:'abs',p:{n:12,buy:30,sell:70},desc:'12-day RSI (Wilder smoothing; note 12 days, not 14). At or below the buy threshold counts as oversold.'},
+ {id:6,cat:'Price',name:'Bollinger lower-band break',dir:'low',kind:'abs',p:{n:20,k:2,buy:0,sell:1},desc:'The variable is %B = (close − lower band) / (upper − lower). Buy on a break below the lower band (%B ≤ 0), sell at the upper band.'},
+ {id:7,cat:'Price',name:'Deviation from 250-day MA',dir:'low',kind:'abs',p:{n:250,buy:-0.1,sell:0.1},desc:'Close / 250-day moving average − 1. Buy once price is a set distance below the annual line.'},
+ {id:8,cat:'Price',name:'Drawdown from 52-week high',dir:'low',kind:'abs',p:{n:252,buy:-0.25,sell:-0.05},desc:'Drawdown of the close from its 252-day high. Buy at a 25% or deeper drawdown.'},
+ {id:9,cat:'Price',name:'12-1 month momentum reversal',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},desc:'Return over the past 12 months excluding the latest month, as a historical percentile. Buy the weakest momentum.'},
+ {id:10,cat:'Relative',name:'Excess vs. CSI Dividend',dir:'low',kind:'pct',p:{n:60,win:504,buy:0.1,sell:0.7},needs:['000922.SH'],desc:'Stock N-day return − CSI Dividend N-day return, as a historical percentile. Buy when lagging the dividend index.'},
+ {id:11,cat:'Relative',name:'Excess vs. CSI 300',dir:'low',kind:'pct',p:{n:60,win:504,buy:0.05,sell:0.5},needs:['000300.SH'],desc:'Stock 60-day return − CSI 300 60-day return, as a historical percentile. At or below the 5th percentile is the study\'s definition of a drawdown.'},
+ {id:12,cat:'Relative',name:'Power / STAR 50 ratio pct.',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},needs:['801161.SWI','000688.SH'],desc:'Percentile of the SW Power / STAR 50 ratio. Buy when power is cheap relative to growth stocks. STAR 50 data starts 2019-12-31.'},
+ {id:13,cat:'Relative',name:'Power / semis ratio pct.',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},needs:['801161.SWI','H30184.CSI'],desc:'Percentile of the SW Power / CSI Semiconductor ratio.'},
+ {id:14,cat:'Relative',name:'Hydro/thermal/nuclear strength',off:'Off'},
+ {id:15,cat:'Flows',name:'Turnover share (absolute)',dir:'low',kind:'abs',p:{n:20,buy:null,sell:null},needs:['两市总成交额.csv'],desc:'Stock 20-day average turnover / 20-day average total market turnover, as an absolute value (no percentile). Thresholds are pre-filled at the sample\'s 20th / 70th percentiles; change them to fixed values as needed.'},
+ {id:16,cat:'Flows',name:'Turnover rate percentile',dir:'low',kind:'pct',p:{win:504,buy:0.2,sell:0.8},desc:'Historical percentile of turnover rate. Buy at a low percentile (quiet trading).'},
+ {id:17,cat:'Cross-asset',name:'Thermal vs. coal divergence',off:'Retired'},
+ {id:18,cat:'Cross-asset',name:'Hydro vs. bond divergence',dir:'low',kind:'abs',p:{n:60,win:504,buy:-0.4,sell:0.2},only:'600900',desc:'60-day stock return percentile − percentile of the 60-day fall in bond yields. Buy when yields fall but the stock hasn\'t risen (divergence). Hydro only (Yangtze Power).'},
+ {id:19,cat:'Cross-asset',name:'Power-coal spread Z-score',off:'Retired'}];
+const PL={win:'Lookback (trading days)',n:'Window (trading days)',k:'Std. dev. multiple',buy:'Buy threshold',sell:'Sell threshold'};
+
+
+function align(fileName,col,dates){const f=FILES[fileName];const out=new Array(dates.length).fill(NaN);if(!f)return out;
+  const m=new Map();f.data.date.forEach((d,i)=>m.set(d,f.data[col][i]));
+  let lastV=NaN,age=99;for(let i=0;i<dates.length;i++){const v=m.get(dates[i]);if(v!==undefined&&fin(v)){lastV=v;age=0;out[i]=v}else{age++;if(age<=5)out[i]=lastV}}return out}
+function rollPct(x,w){const o=new Array(x.length).fill(NaN),minObs=Math.floor(w/2);
+  for(let t=0;t<x.length;t++){const v=x[t];if(!fin(v))continue;let lt=0,eq=0,c=0;for(let j=Math.max(0,t-w+1);j<=t;j++){const u=x[j];if(!fin(u))continue;c++;if(u<v)lt++;else if(u===v)eq++}
+    if(c>=minObs)o[t]=(lt+0.5*eq)/c}return o}
+function sma(x,n){const o=new Array(x.length).fill(NaN);let s=0,c=0;const q=[];for(let t=0;t<x.length;t++){q.push(x[t]);if(fin(x[t])){s+=x[t];c++}if(q.length>n){const r=q.shift();if(fin(r)){s-=r;c--}}if(q.length===n&&c===n)o[t]=s/n}return o}
+function rstd(x,n){const m=sma(x,n),o=new Array(x.length).fill(NaN);for(let t=n-1;t<x.length;t++){if(!fin(m[t]))continue;let s=0;for(let j=t-n+1;j<=t;j++)s+=(x[j]-m[t])**2;o[t]=Math.sqrt(s/n)}return o}
+function rmax(x,n){const o=new Array(x.length).fill(NaN);for(let t=n-1;t<x.length;t++){let m=-Infinity;for(let j=t-n+1;j<=t;j++)if(fin(x[j])&&x[j]>m)m=x[j];if(m>-Infinity)o[t]=m}return o}
+function retN(x,n){return x.map((v,t)=>t>=n?v/x[t-n]-1:NaN)}
+function rsi(c,n){const o=new Array(c.length).fill(NaN);let g=0,l=0;for(let t=1;t<c.length;t++){const d=c[t]-c[t-1];if(!fin(d))continue;const up=Math.max(d,0),dn=Math.max(-d,0);
+  if(t<=n){g+=up/n;l+=dn/n;if(t===n)o[t]=l===0?100:100-100/(1+g/l)}else{g=(g*(n-1)+up)/n;l=(l*(n-1)+dn)/n;o[t]=l===0?100:100-100/(1+g/l)}}return o}
+function quant(a,q){const s=a.filter(fin).sort((x,y)=>x-y);if(!s.length)return NaN;const p=(s.length-1)*q,i=Math.floor(p);return s[i]+(s[Math.min(i+1,s.length-1)]-s[i])*(p-i)}
+function median(a){return quant(a,0.5)}
+
+
+function ctxFor(code){const f=FILES[code+'.csv'];if(!f)return null;const dates=f.data.date;
+  return{code,dates,open:f.data.open,close:f.data.close,dv:f.data.dv_ttm,pb:f.data.pb,amount:f.data.amount,turnover:f.data.turnover,
+    idx:k=>align(k+'.csv','close',dates),yld:()=>align('国债10Y.csv','yield',dates),tot:()=>align('两市总成交额.csv','total_amount',dates)}}
+
+function computeSignal(s,c,p){
+  let raw;
+  switch(s.id){
+    case 1:raw=c.dv.slice();break;
+    case 2:{const y=c.yld();raw=c.dv.map((v,i)=>v-y[i]);break}
+    case 3:raw=c.pb.slice();break;
+    case 5:raw=rsi(c.close,p.n);break;
+    case 6:{const m=sma(c.close,p.n),sd=rstd(c.close,p.n);raw=c.close.map((v,i)=>{const lo=m[i]-p.k*sd[i],hi=m[i]+p.k*sd[i];return hi>lo?(v-lo)/(hi-lo):NaN});break}
+    case 7:{const m=sma(c.close,p.n);raw=c.close.map((v,i)=>v/m[i]-1);break}
+    case 8:{const m=rmax(c.close,p.n);raw=c.close.map((v,i)=>v/m[i]-1);break}
+    case 9:raw=c.close.map((v,t)=>t>=252?c.close[t-21]/c.close[t-252]-1:NaN);break;
+    case 10:case 11:{const ix=c.idx(s.id===10?'000922.SH':'000300.SH'),a=retN(c.close,p.n),b=retN(ix,p.n);raw=a.map((v,i)=>v-b[i]);break}
+    case 12:case 13:{const e=c.idx('801161.SWI'),o=c.idx(s.id===12?'000688.SH':'H30184.CSI');raw=e.map((v,i)=>v/o[i]);break}
+    case 15:{const a=sma(c.amount,p.n),t=sma(c.tot(),p.n);raw=a.map((v,i)=>v/t[i]);break}
+    case 16:raw=c.turnover.slice();break;
+    case 18:{const y=c.yld();const a=rollPct(retN(c.close,p.n),p.win);const dy=y.map((v,t)=>t>=p.n?-(v-y[t-p.n]):NaN);const b=rollPct(dy,p.win);raw=a.map((v,i)=>v-b[i]);break}
+  }
+  raw=raw.map(v=>fin(v)?v:NaN);
+  const trig=s.kind==='pct'?rollPct(raw,p.win):raw;
+  return{raw,trig};
+}
+
+
+function rangeIdx(dates,a,b){let i0=dates.findIndex(d=>d>=a),i1=-1;for(let i=dates.length-1;i>=0;i--)if(dates[i]<=b){i1=i;break}return i0<0||i1<i0+30?null:[i0,i1]}
+function runEngine(c,trig,s,p,g,i0,i1){
+  const n=i1-i0+1,hs=c.idx('000300.SH');
+  const nav=new Array(n),bh=new Array(n),bm=new Array(n),pos=new Array(n),daily=new Array(n).fill(0);
+  let pv=g.floor,v=1;const trades=[];nav[0]=1;pos[0]=pv;
+  const hs0=hs[i0],c0=c.close[i0];bh[0]=1;bm[0]=fin(hs0)?1:NaN;
+  const cross=k=>{const a=trig[k-1],b=trig[k];if(!fin(a)||!fin(b))return 0;
+    if(s.dir==='high'){if(a<p.buy&&b>=p.buy)return 1;if(a>p.sell&&b<=p.sell)return -1}
+    else{if(a>p.buy&&b<=p.buy)return 1;if(a<p.sell&&b>=p.sell)return -1}return 0};
+  for(let t=i0+1;t<=i1;t++){const k=t-i0,sday=t-2;let pn=pv;
+    if(sday>i0){const x=cross(sday);if(x>0)pn=Math.min(g.cap,+(pv+g.step).toFixed(6));else if(x<0)pn=Math.max(g.floor,+(pv-g.step).toFixed(6))}
+    const op=fin(c.open[t])?c.open[t]:c.close[t-1];
+    const r1=op/c.close[t-1]-1,r2=c.close[t]/op-1;
+    const before=v;v*=(1+pv*r1)*(1+pn*r2);
+    if(pn!==pv){v*=1-g.cost/2*Math.abs(pn-pv);trades.push({t,k,date:c.dates[t],sigDate:c.dates[sday],act:pn>pv?'Add':'Trim',from:pv,to:pn,price:op,sv:trig[sday]})}
+    daily[k]=v/before-1;pv=pn;nav[k]=v;pos[k]=pv;bh[k]=c.close[t]/c0;bm[k]=fin(hs[t])&&fin(hs0)?hs[t]/hs0:NaN}
+  const days=n-1,ann=x=>Math.pow(x,252/days)-1;
+  let peak=1,mdd=0;nav.forEach(x=>{if(x>peak)peak=x;mdd=Math.min(mdd,x/peak-1)});
+  const dr=daily.slice(1),mu=dr.reduce((a,b)=>a+b,0)/dr.length,sd=Math.sqrt(dr.reduce((a,b)=>a+(b-mu)**2,0)/(dr.length-1));
+  const hold=dr.filter((x,i)=>pos[i]>0||pos[i+1]>0);
+  const m={ann:ann(nav[n-1]),bh:ann(bh[n-1]),mdd,sharpe:sd>1e-12?(mu-g.rf/252)/sd*Math.sqrt(252):NaN,trades:trades.length,holdDays:pos.filter(x=>x>0).length,
+    win:hold.length?hold.filter(x=>x>0).length/hold.length:NaN,buys:trades.filter(x=>x.act==='Add').length,sells:trades.filter(x=>x.act==='Trim').length};
+  m.ex=m.ann-m.bh;m.calmar=mdd<0?m.ann/Math.abs(mdd):NaN;
+  return{nav,bh,bm,pos,trades,m,i0,i1};
+}
+function rank(a){const idx=a.map((v,i)=>[v,i]).sort((x,y)=>x[0]-y[0]),r=new Array(a.length);for(let i=0;i<idx.length;){let j=i;while(j+1<idx.length&&idx[j+1][0]===idx[i][0])j++;const rr=(i+j)/2+1;for(let k=i;k<=j;k++)r[idx[k][1]]=rr;i=j+1}return r}
+function erfc(x){const t=1/(1+0.5*x),y=t*Math.exp(-x*x-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?y:2-y}
+function runIC(c,v,N,i0,i1){const xs=[],ys=[];
+  for(let t=i0;t<=i1-N;t++){const a=v[t],f=c.close[t+N]/c.close[t]-1;if(fin(a)&&fin(f)){xs.push(a);ys.push(f)}}
+  const n=xs.length;if(n<30)return null;
+  const rx=rank(xs),ry=rank(ys),mx=(n+1)/2;let sxy=0,sxx=0,syy=0;for(let i=0;i<n;i++){sxy+=(rx[i]-mx)*(ry[i]-mx);sxx+=(rx[i]-mx)**2;syy+=(ry[i]-mx)**2}
+  const ic=sxy/Math.sqrt(sxx*syy),tt=Math.abs(ic)*Math.sqrt((n-2)/Math.max(1e-12,1-ic*ic)),pv=erfc(tt/Math.SQRT2);
+  const ord=xs.map((x,i)=>i).sort((a,b)=>xs[a]-xs[b]||a-b),q=[];
+  for(let g=0;g<5;g++){const lo=Math.round(g*n/5),hi=Math.round((g+1)*n/5);const ids=ord.slice(lo,hi);const fv=ids.map(i=>ys[i]);
+    q.push({g:'Q'+(g+1),n:ids.length,v:ids.reduce((s,i)=>s+xs[i],0)/ids.length,mean:fv.reduce((s,x)=>s+x,0)/fv.length,med:median(fv)})}
+  return{ic,p:pv,n,q};
+}
+
+
+let cur=2;const PARAMS={};SIG.forEach(s=>{if(s.p)PARAMS[s.id]={...s.p}});
+function buildCfg(){
+  $('#cStock').innerHTML=STOCKS.map(s=>'<option value="'+s[0]+'">'+s[1]+' ('+s[0]+') · '+s[2]+'</option>').join('');
+  $('#cN').innerHTML=[5,10,20,30,60,90,120].map(x=>'<option value="'+x+'"'+(x===60?' selected':'')+'>Next '+x+' trading days</option>').join('');
+  const cats=[...new Set(SIG.map(s=>s.cat))];
+  $('#sigList').innerHTML='<div class="sg"><h5 style="margin-top:4px">Signal library</h5></div>'+cats.map(ct=>'<div class="sg"><h5>'+ct+'</h5>'+SIG.filter(s=>s.cat===ct).map(s=>'<button class="si" data-sig="'+s.id+'"'+(s.off?' disabled':'')+'><span class="no">'+s.id+'</span><span>'+esc(s.name)+'</span>'+(s.off?'<span class="off'+(s.off==='Retired'?' x':'')+'">'+s.off+'</span>':'')+'</button>').join('')+'</div>').join('');
+  $('#sigList').addEventListener('click',e=>{const b=e.target.closest('[data-sig]');if(b&&!b.disabled){cur=+b.dataset.sig;renderSig()}});
+  $('#cStock').addEventListener('change',()=>{renderSig()});
+  renderSig();
+}
+function renderSig(){
+  const s=SIG.find(x=>x.id===cur),p=PARAMS[cur];
+  $$('.si').forEach(b=>b.classList.toggle('on',+b.dataset.sig===cur));
+  if(s.id===15&&(p.buy==null||p.sell==null)){const c=ctxFor($('#cStock').value);if(c){const r=computeSignal(s,c,p).raw;p.buy=+quant(r,0.2).toPrecision(3);p.sell=+quant(r,0.7).toPrecision(3)}}
+  const isPct=s.kind==='pct';
+  const flds=Object.keys(p).map(k=>{const lab=(isPct&&(k==='buy'||k==='sell'))?(k==='buy'?'Buy percentile':'Sell percentile'):PL[k];const hint=k==='win'&&p[k]===504?' <small>≈ 2 years</small>':'';
+    return '<div class="fld"><label for="p_'+k+'">'+lab+hint+'</label><input id="p_'+k+'" data-k="'+k+'" type="number" step="'+(k==='win'||k==='n'?1:'any')+'" value="'+p[k]+'"></div>'}).join('');
+  const rule=(s.dir==='high'?'add when the variable crosses up to ≥ buy, trim when it crosses down to ≤ sell':'add when the variable crosses down to ≤ buy, trim when it crosses up to ≥ sell');
+  $('#sigPanel').innerHTML='<h4>Signal '+s.id+' · '+esc(s.name)+'</h4><div class="sigmeta">'+s.cat+' · '+(isPct?'percentile basis':'absolute basis')+' · '+rule+'</div><div class="sigdesc">'+esc(s.desc)+'</div><div class="form">'+flds+'</div>';
+  $$('#sigPanel input').forEach(i=>i.addEventListener('input',()=>{const v=parseFloat(i.value);if(fin(v))p[i.dataset.k]=v}));
+  updateRunBtn();
+}
+function updateRunBtn(){const b=$('#runBtn'),h=$('#runHint');if(!b)return;const s=SIG.find(x=>x.id===cur);let msg='';
+  if(!verified)msg='Confirm the data in Data Check first (garbage in, garbage out)';
+  else if(s.only&&$('#cStock').value!==s.only)msg='This signal only applies to Yangtze Power (600900)';
+  else if(!FILES[$('#cStock').value+'.csv'])msg='Data file for this stock is missing';
+  else if((s.needs||[]).some(f=>!FILES[f.endsWith('.csv')?f:f+'.csv']))msg='Missing data this signal needs: '+s.needs.join(', ');
+  b.disabled=!!msg;h.textContent=msg}
+function readCfg(){const g=x=>parseFloat($(x).value);return{stock:$('#cStock').value,mode:$('#cMode').value,N:+$('#cN').value,icv:$('#cIcv').value,step:g('#cStep'),floor:g('#cFloor'),cap:g('#cCap'),start:$('#cStart').value,end:$('#cEnd').value,cost:g('#cCost'),rf:g('#cRf'),seg:$('#c924').checked}}
+
+
+let RES=null;
+function run(cfg,sid){
+  const s=SIG.find(x=>x.id===sid),p={...PARAMS[sid]},c=ctxFor(cfg.stock);if(!c)return null;
+  if(cfg.floor>cfg.cap)cfg.floor=cfg.cap;
+  const sg=computeSignal(s,c,p),r=rangeIdx(c.dates,cfg.start,cfg.end);if(!r)return{err:'Too few trading days in the selected range (fewer than 30)'};
+  const icVar=cfg.icv==='pct'&&s.kind==='pct'?sg.trig:sg.raw;
+  const out={cfg,s,p,c,sg,i0:r[0],i1:r[1]};
+  out.eng=runEngine(c,sg.trig,s,p,cfg,r[0],r[1]);
+  out.ic=runIC(c,icVar,cfg.N,r[0],r[1]);
+  out.icLabel=icVar===sg.trig?'percentile':'raw value';
+  if(cfg.seg){const cut='2024-09-24',segs=[['Full period',cfg.start,cfg.end],['Before 924',cfg.start,'2024-09-23'],['After 924',cut,cfg.end]];
+    out.seg=segs.map(([nm,a,b])=>{const rr=rangeIdx(c.dates,a,b);if(!rr)return{nm,na:true};const e=runEngine(c,sg.trig,s,p,cfg,rr[0],rr[1]);return{nm,a:c.dates[rr[0]],b:c.dates[rr[1]],ic:runIC(c,icVar,cfg.N,rr[0],rr[1]),m:e.m}})}
+  return out;
+}
+function renderResult(){
+  const o=RES;if(!o)return;if(o.err){$('#resHead').innerHTML='<div class="warn">'+esc(o.err)+'</div>';return}
+  const st=STOCKS.find(x=>x[0]===o.cfg.stock),e=o.eng,m=e.m,mock=FILES[o.cfg.stock+'.csv'].mock;
+  $('#resHead').innerHTML='<div class="rhead"><h3>'+st[1]+' ('+st[0]+') · Signal '+o.s.id+': '+esc(o.s.name)+(mock?' <span class="mockb">MOCK · sample data</span>':'')+'</h3><div class="sub">'+o.c.dates[o.i0]+' ~ '+o.c.dates[o.i1]+' · '+(o.i1-o.i0+1)+' trading days</div>'+
+    '<div class="chips"><span class="chip g">Adds: '+m.buys+'</span><span class="chip r">Trims: '+m.sells+'</span><span class="chip">Days invested: '+m.holdDays+' / '+(o.i1-o.i0+1)+' ('+pct(m.holdDays/(o.i1-o.i0+1),1)+')</span></div></div>';
+  const showIC=o.cfg.mode!=='nav',showNav=o.cfg.mode!=='ic';
+  $('#icPanel').hidden=!showIC;$('#navPanel').hidden=!showNav;
+  if(showIC){const ic=o.ic;
+    if(!ic){$('#icKpi').innerHTML='';$('#icTable').innerHTML='';$('#icChart').innerHTML='<div class="empty">Fewer than 30 valid observations, so no IC. Try a longer date range or a shorter forward window.</div>'}
+    else{$('#icKpi').innerHTML=[[num(ic.ic),'IC (Spearman)',ic.ic>0.1?'up':ic.ic<-0.1?'dn':''],[num(ic.p),'p-value',''],[ic.n,'Valid observations',''],[o.cfg.N+'d','Forward window · '+o.icLabel+' basis','']].map(x=>'<div class="met"><div class="v '+x[2]+'">'+x[0]+'</div><div class="k">'+x[1]+'</div></div>').join('');
+      $('#icTable').innerHTML='<tr><th>Quintile</th><th>Obs.</th><th>Signal mean</th><th>Mean fwd. return</th><th>Median fwd. return</th></tr>'+ic.q.map(q=>'<tr><td>'+q.g+'</td><td class="n">'+q.n+'</td><td class="n">'+num(q.v)+'</td><td class="n '+(q.mean<0?'dn':'')+'">'+pct(q.mean)+'</td><td class="n '+(q.med<0?'dn':'')+'">'+pct(q.med)+'</td></tr>').join('')}}
+  if(showNav){
+    $('#ruleTxt').innerHTML='<b>Position rule (stepwise · on crossings)</b>: on the day the signal '+(o.s.dir==='high'?'crosses up through the buy line':'crosses down through the buy line')+' → <b>add '+pct(o.cfg.step,0)+'</b> (cap '+pct(o.cfg.cap,0)+'). No further adds until it leaves and crosses again. On the day it '+(o.s.dir==='high'?'crosses down through the sell line':'crosses up through the sell line')+' → <b>trim '+pct(o.cfg.step,0)+'</b> (floor / base '+pct(o.cfg.floor,0)+'). Triggered per crossing, so adds and trims need not match. T-1 signal → filled at T+1 open, round-trip cost '+pct(o.cfg.cost,2)+'.';
+    const k=(v,l,c)=>'<div class="met"><div class="v '+(c||'')+'">'+v+'</div><div class="k">'+l+'</div></div>';
+    $('#navKpi').innerHTML=k(pct(m.ann),'Strategy CAGR',m.ann<0?'dn':'')+k(pct(m.bh),'Buy & hold CAGR',m.bh<0?'dn':'')+k(pct(m.ex),'Excess CAGR',m.ex<0?'dn':'up')+k(pct(m.mdd),'Max drawdown',m.mdd<-0.0001?'dn':'')+
+      k(num(m.sharpe,2),'Sharpe (rf='+pct(o.cfg.rf,0)+')')+k(num(m.calmar,2),'Calmar')+k(m.trades,'Trades')+k(pct(m.win,1),'Up-day rate when invested');
+    $('#sigName').textContent=o.s.name;$('#sigKind').textContent=o.s.kind==='pct'?'percentile':'raw value';
+    $('#trSum').textContent='Trades (first 50 of '+e.trades.length+')';
+    $('#trTable').innerHTML=e.trades.length?'<tr><th>Fill date (T+1 open)</th><th>Signal date</th><th>Action</th><th>Position</th><th>Fill price</th><th>Signal value</th></tr>'+e.trades.slice(0,50).map(x=>'<tr><td>'+x.date+'</td><td>'+x.sigDate+'</td><td class="'+(x.act==='Add'?'up':'dn')+'">'+x.act+'</td><td>'+pct(x.from,0)+' → '+pct(x.to,0)+'</td><td>'+fmtV(x.price)+'</td><td>'+num(x.sv)+'</td></tr>').join(''):'<tr><td class="empty">No crossings in this range. Try looser thresholds or a shorter lookback.</td></tr>'}
+  $('#segPanel').hidden=!o.seg;
+  if(o.seg)$('#segTable').innerHTML='<tr><th>Period</th><th>Dates</th><th>IC</th><th>p</th><th>Strategy CAGR</th><th>Buy & hold CAGR</th><th>Max DD</th><th>Sharpe</th></tr>'+o.seg.map(x=>x.na?'<tr><td>'+x.nm+'</td><td colspan="7">Period too short</td></tr>':'<tr><td><b>'+x.nm+'</b></td><td class="n">'+x.a+' ~ '+x.b+'</td><td class="n">'+(x.ic?num(x.ic.ic):'–')+'</td><td class="n">'+(x.ic?num(x.ic.p):'–')+'</td><td class="n">'+pct(x.m.ann)+'</td><td class="n">'+pct(x.m.bh)+'</td><td class="n dn">'+pct(x.m.mdd)+'</td><td class="n">'+num(x.m.sharpe,2)+'</td></tr>').join('');
+  drawCharts();
+}
+
+
+function niceTicks(lo,hi,cnt){if(!(hi>lo)){hi=lo+1;lo-=1}const span=hi-lo,step0=span/cnt,mag=Math.pow(10,Math.floor(Math.log10(step0))),f=step0/mag;const step=(f<1.5?1:f<3?2:f<7?5:10)*mag;
+  const a=Math.floor(lo/step)*step,b=Math.ceil(hi/step)*step,out=[];for(let v=a;v<=b+step/2;v+=step)out.push(+v.toFixed(10));return out}
+function lineChart(el,o){
+  const W=Math.max(300,el.clientWidth||700),H=o.h,ml=46,mr=o.endLabels?98:14,mt=10,mb=24,pw=W-ml-mr,ph=H-mt-mb,n=o.dates.length;
+  let lo=Infinity,hi=-Infinity;o.series.forEach(s=>s.v.forEach(v=>{if(fin(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}}));(o.hlines||[]).forEach(h=>{lo=Math.min(lo,h.y);hi=Math.max(hi,h.y)});
+  if(!fin(lo)){el.innerHTML='<div class="empty">No data to plot</div>';return}
+  const pad=(hi-lo)*0.06||0.5;const ticks=niceTicks(lo-pad,hi+pad,4);const y0=ticks[0],y1=ticks[ticks.length-1];
+  const X=i=>ml+(n<2?0:i/(n-1)*pw),Y=v=>mt+ph-(v-y0)/(y1-y0)*ph;
+  let g='';ticks.forEach(t=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="var(--line)" stroke-width="1"/><text x="'+(ml-6)+'" y="'+(Y(t)+3.5)+'" text-anchor="end">'+o.yfmt(t)+'</text>'});
+  const yrs=[];for(let i=0;i<n;i++)if(i===0||o.dates[i].slice(0,4)!==o.dates[i-1].slice(0,4))yrs.push(i);
+  const every=pw/Math.max(1,yrs.length)<44?2:1;yrs.forEach((i,j)=>{if(j%every)return;g+='<line x1="'+X(i)+'" x2="'+X(i)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph+4)+'" stroke="var(--line2)"/><text x="'+X(i)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':'middle')+'">'+o.dates[i].slice(0,4)+'</text>'});
+  g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+(mt+ph)+'" y2="'+(mt+ph)+'" stroke="var(--line2)"/>';
+  (o.hlines||[]).forEach(h=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(h.y)+'" y2="'+Y(h.y)+'" stroke="'+h.c+'" stroke-width="1.2" stroke-dasharray="5 4"/><text class="lab" x="'+(ml+pw-4)+'" y="'+(Y(h.y)-4)+'" text-anchor="end" style="fill:'+h.c+'">'+h.l+'</text>'});
+  o.series.forEach(s=>{let d='',pen=false;s.v.forEach((v,i)=>{if(fin(v)){d+=(pen?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pen=true}else pen=false});
+    g+='<path d="'+d+'" fill="none" stroke="'+s.c+'" stroke-width="'+(s.w||1.6)+'" stroke-linejoin="round"'+(s.dash?' stroke-dasharray="5 3"':'')+'/>'});
+  (o.marks||[]).forEach(mk=>{const x=X(mk.i),y=Y(mk.y);if(!fin(y))return;const up=mk.t>0,sz=5;
+    g+=up?'<path d="M'+x+' '+(y+4)+'l'+sz+' '+(sz*1.7)+'h'+(-2*sz)+'z" fill="var(--green)" stroke="var(--card)" stroke-width="1.5"/>':'<path d="M'+x+' '+(y-4)+'l'+sz+' '+(-sz*1.7)+'h'+(-2*sz)+'z" fill="var(--red)" stroke="var(--card)" stroke-width="1.5"/>'});
+  if(o.endLabels){const ls=o.series.map(s=>{let i=n-1;while(i>0&&!fin(s.v[i]))i--;return{y:Y(s.v[i]),t:s.name+' '+o.yfmt(s.v[i],1),c:s.c}}).sort((a,b)=>a.y-b.y);
+    for(let i=1;i<ls.length;i++)if(ls[i].y-ls[i-1].y<13)ls[i].y=ls[i-1].y+13;ls.forEach(l=>{g+='<text class="lab" x="'+(ml+pw+6)+'" y="'+(l.y+4)+'" style="fill:var(--tx2)"><tspan style="fill:'+l.c+'">●</tspan> '+esc(l.t)+'</text>'})}
+  g+='<line class="xh" x1="0" x2="0" y1="'+mt+'" y2="'+(mt+ph)+'" stroke="var(--tx3)" stroke-width="1" visibility="hidden"/><g class="dots"></g><rect x="'+ml+'" y="'+mt+'" width="'+pw+'" height="'+ph+'" fill="transparent" class="hit"/>';
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" aria-label="'+esc(o.aria)+'">'+g+'</svg><div class="tip" hidden></div>';
+  const svg=el.querySelector('svg'),xh=svg.querySelector('.xh'),dots=svg.querySelector('.dots'),tip=el.querySelector('.tip');
+  const move=ev=>{const r=svg.getBoundingClientRect(),sx=(ev.clientX-r.left)*W/r.width;let i=Math.round((sx-ml)/pw*(n-1));i=Math.max(0,Math.min(n-1,i));
+    xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('visibility','visible');
+    dots.innerHTML=o.series.map(s=>fin(s.v[i])?'<circle cx="'+X(i)+'" cy="'+Y(s.v[i])+'" r="4" fill="'+s.c+'" stroke="var(--card)" stroke-width="2"/>':'').join('');
+    tip.innerHTML='<div style="color:var(--tx3)">'+o.dates[i]+'</div>'+o.series.map(s=>'<div><i style="background:'+s.c+'"></i>'+s.name+' <b>'+o.yfmt(s.v[i],1)+'</b></div>').join('')+(o.extra?o.extra(i):'');
+    tip.hidden=false;const px=X(i)*r.width/W,tw=tip.offsetWidth;tip.style.left=Math.min(Math.max(0,px+12+tw>r.width?px-tw-12:px+12),r.width-tw)+'px';tip.style.top='6px'};
+  svg.addEventListener('pointermove',move);svg.addEventListener('pointerdown',move);
+  svg.addEventListener('pointerleave',()=>{xh.setAttribute('visibility','hidden');dots.innerHTML='';tip.hidden=true});
+}
+function barChart(el,q){
+  const W=Math.max(300,el.clientWidth||700),H=220,ml=46,mr=10,mt=16,mb=34,pw=W-ml-mr,ph=H-mt-mb;
+  let lo=0,hi=0;q.forEach(x=>{lo=Math.min(lo,x.mean,x.med);hi=Math.max(hi,x.mean,x.med)});const ticks=niceTicks(lo,hi,4),y0=ticks[0],y1=ticks[ticks.length-1];
+  const Y=v=>mt+ph-(v-y0)/(y1-y0)*ph,bw=pw/5;let g='';
+  ticks.forEach(t=>{g+='<line x1="'+ml+'" x2="'+(ml+pw)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="'+(t===0?'var(--line2)':'var(--line)')+'"/><text x="'+(ml-6)+'" y="'+(Y(t)+3.5)+'" text-anchor="end">'+(t*100).toFixed(Math.abs(y1-y0)<0.05?1:0)+'%</text>'});
+  q.forEach((x,i)=>{const cx=ml+bw*i+bw/2,w=Math.min(56,bw*0.56),top=Math.min(Y(x.mean),Y(0)),h=Math.max(1,Math.abs(Y(x.mean)-Y(0))),neg=x.mean<0;
+    g+='<g class="bar" data-i="'+i+'"><rect x="'+(cx-bw/2)+'" y="'+mt+'" width="'+bw+'" height="'+ph+'" fill="transparent"/><path d="'+barPath(cx-w/2,top,w,h,neg)+'" fill="'+(neg?'var(--red)':'var(--s1)')+'" opacity=".9"/>'+
+      '<line x1="'+(cx-w/2-4)+'" x2="'+(cx+w/2+4)+'" y1="'+Y(x.med)+'" y2="'+Y(x.med)+'" stroke="var(--tx)" stroke-width="2.5" stroke-linecap="round"/>'+
+      '<text x="'+cx+'" y="'+(neg?top+h+13:top-5)+'" text-anchor="middle" style="fill:var(--tx2)">'+pct(x.mean)+'</text>'+
+      '<text class="lab" x="'+cx+'" y="'+(H-16)+'" text-anchor="middle" style="fill:var(--tx);font-weight:600">'+x.g+'</text><text x="'+cx+'" y="'+(H-3)+'" text-anchor="middle">n='+x.n+'</text></g>'});
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" aria-label="Forward returns by quintile, Q1 to Q5">'+g+'</svg><div class="tip" hidden></div>';
+  const svg=el.querySelector('svg'),tip=el.querySelector('.tip');
+  svg.querySelectorAll('.bar').forEach(b=>{const show=ev=>{const x=q[+b.dataset.i],r=svg.getBoundingClientRect();
+    tip.innerHTML='<div><b>'+x.g+'</b> (quintile '+(+b.dataset.i+1)+' of the signal, low to high)</div><div>Obs. <b>'+x.n+'</b> · signal mean <b>'+num(x.v)+'</b></div><div><i style="background:var(--s1)"></i>Mean return <b>'+pct(x.mean)+'</b></div><div><i style="background:var(--tx)"></i>Median return <b>'+pct(x.med)+'</b></div>';
+    tip.hidden=false;const px=(ml+bw*(+b.dataset.i)+bw/2)*r.width/W,tw=tip.offsetWidth;tip.style.left=Math.max(0,Math.min(px-tw/2,r.width-tw))+'px';tip.style.top='0px'};
+    b.addEventListener('pointerenter',show);b.addEventListener('pointerdown',show);b.addEventListener('pointerleave',()=>tip.hidden=true)});
+}
+function barPath(x,y,w,h,neg){const r=Math.min(4,h,w/2);return neg?'M'+x+' '+y+'h'+w+'v'+(h-r)+'q0 '+r+' '+(-r)+' '+r+'h'+(-(w-2*r))+'q'+(-r)+' 0 '+(-r)+' '+(-r)+'z':'M'+x+' '+(y+h)+'v'+(-(h-r))+'q0 '+(-r)+' '+r+' '+(-r)+'h'+(w-2*r)+'q'+r+' 0 '+r+' '+r+'v'+(h-r)+'z'}
+function drawCharts(){
+  const o=RES;if(!o||o.err||$('#l2').offsetParent===null)return;const e=o.eng,ds=o.c.dates.slice(o.i0,o.i1+1);
+  if(o.cfg.mode!=='nav'&&o.ic)barChart($('#icChart'),o.ic.q);
+  if(o.cfg.mode==='ic')return;
+  const marks=e.trades.map(t=>({i:t.k,y:e.nav[t.k],t:t.act==='Add'?1:-1}));
+  lineChart($('#navChart'),{h:300,dates:ds,endLabels:true,aria:'NAV of the strategy, buy & hold and CSI 300',yfmt:(v,d)=>fin(v)?v.toFixed(d?3:2):'–',
+    series:[{name:'Strategy',c:'var(--s1)',v:e.nav,w:2},{name:'Buy & hold',c:'var(--s2)',v:e.bh},{name:'CSI 300',c:'var(--s3)',v:e.bm,dash:true}],marks,
+    extra:i=>'<div style="color:var(--tx3)">Position <b style="color:var(--tx)">'+pct(e.pos[i],0)+'</b></div>'});
+  const all=[...e.nav,...e.bh,...e.bm].filter(fin);$('#navCap').textContent='NAV range: '+Math.min(...all).toFixed(2)+' – '+Math.max(...all).toFixed(2)+' (start = 1.00)';
+  const sv=o.sg.trig.slice(o.i0,o.i1+1),isP=o.s.kind==='pct';
+  const smarks=e.trades.map(t=>({i:t.k-2,y:o.sg.trig[t.t-2],t:t.act==='Add'?1:-1})).filter(m=>m.i>=0);
+  const vf=(v,d)=>fin(v)?(isP?(v*100).toFixed(d?1:0)+'%':Math.abs(v)<0.01&&v!==0?v.toExponential(2):v.toFixed(Math.abs(v)>=10?1:3)):'–';
+  lineChart($('#sigChart'),{h:190,dates:ds,aria:'Signal variable with buy and sell thresholds',yfmt:vf,series:[{name:o.s.name,c:'var(--tx2)',v:sv,w:1.4}],marks:smarks,
+    hlines:[{y:o.p.buy,c:'var(--green)',l:'Buy '+vf(o.p.buy,1)},{y:o.p.sell,c:'var(--red)',l:'Sell '+vf(o.p.sell,1)}]});
+  const fv=sv.filter(fin);$('#sigCap').textContent='Y axis = signal '+(isP?'percentile':'raw value')+': range '+(fv.length?vf(Math.min(...fv),1)+' – '+vf(Math.max(...fv),1):'no valid values');
+}
+
+
+function lgo(i){$$('.tabs[data-m="b"] .tab').forEach((t,j)=>t.classList.toggle('on',i===j));$$('.lpage').forEach((p,j)=>p.classList.toggle('on',i===j));window.scrollTo(0,0);if(i===2)drawCharts()}
+window.lgo=lgo;
+function setMode(m){$('#modeA').hidden=m!=='a';$('#modeB').hidden=m!=='b';$$('.tabs[data-m]').forEach(t=>t.hidden=t.dataset.m!==m);$$('.mode').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  try{localStorage.setItem('mode',m)}catch(e){}if(m==='b')drawCharts();window.scrollTo(0,0)}
+window.setMode=setMode;
+
+
+makeSample();buildCfg();renderVerify();
+RES=run(readCfg(),2);renderResult();
+$('#vTable').addEventListener('click',e=>{const b=e.target.closest('[data-pv]');if(b)showPreview(b.dataset.pv)});
+$('#verifyBtn').addEventListener('click',()=>{verified=true;updateRunBtn();lgo(1)});
+$('#runBtn').addEventListener('click',()=>{RES=run(readCfg(),cur);lgo(2);renderResult()});
+$('#cStart').addEventListener('change',updateRunBtn);
+const inp=$('#csvIn'),drop=$('#drop');
+async function load(files){const ok=[],bad=[];for(const f of files){if(!SPEC[f.name]){bad.push(f.name);continue}try{FILES[f.name]=parseCSV(f.name,await f.text());ok.push(f.name)}catch(err){bad.push(f.name)}}
+  verified=false;const m=$('#loadMsg');m.hidden=false;m.innerHTML='Loaded '+ok.length+' file(s)'+(bad.length?'; not recognised: '+bad.map(esc).join(', ')+' (file names must match data_cache)':'')+'. The data changed, so please check it again.';
+  PARAMS[15].buy=PARAMS[15].sell=null;renderVerify();renderSig();RES=run(readCfg(),cur);renderResult()}
+inp.addEventListener('change',()=>{load(inp.files);inp.value=''});
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>load(e.dataTransfer.files));
+$$('.mode').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(drawCharts,150)});
+let m0='a';try{m0=localStorage.getItem('mode')||'a'}catch(e){}if(location.hash==='#lab')m0='b';if(m0==='b')setMode('b');
+})();
+</script>
+</body>
+</html>
